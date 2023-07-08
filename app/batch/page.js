@@ -3,7 +3,7 @@ const Batch = () => {
     return (
         <div className="container mx-auto p-8">
             <h2 className="text-5xl font-bold mb-5 text-center">Batches</h2>
-            <div className="m-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="sm:m-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 
                 
                 <div className="bg-white shadow-lg rounded-lg overflow-hidden">
