@@ -14,7 +14,7 @@ const SignupLoginComponent: React.FC = () => {
 
     return (
         <div className="flex justify-center items-center h-screen">
-            <form className="w-1/3 bg-white shadow-md rounded-lg p-8" onSubmit={handleFormSubmit}>
+            <form className="lg:w-1/3 md:w-1/2   bg-white shadow-md rounded-lg p-8" onSubmit={handleFormSubmit}>
                 <h2 className="text-2xl mb-4">{isSignup ? "Sign Up" : "Log In"}</h2>
                 <div className="mb-4">
                     <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="id">
