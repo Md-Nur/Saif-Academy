@@ -19,10 +19,10 @@ const Batch = () => {
                             fringilla massa a sem ultrices, eget auctor justo condimentum.
                         </p>
                         <div className="flex justify-evenly">
-                            <button className="bg-blue-500 text-white px-4 py-2 rounded-full">
+                            <button className="bg-blue-500 text-white px-4 py-2 rounded-lg">
                               Details
                             </button>
-                            <button className="bg-gray-300 text-gray-700 px-4 py-2 rounded-full">
+                            <button className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg">
                                 Enroll
                             </button>
                         </div>
@@ -42,10 +42,10 @@ const Batch = () => {
                             fringilla massa a sem ultrices, eget auctor justo condimentum.
                         </p>
                         <div className="flex justify-evenly">
-                            <button className="bg-blue-500 text-white px-4 py-2 rounded-full">
+                            <button className="bg-blue-500 text-white px-4 py-2 rounded-lg">
                               Details
                             </button>
-                            <button className="bg-gray-300 text-gray-700 px-4 py-2 rounded-full">
+                            <button className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg">
                                 Enroll
                             </button>
                         </div>
@@ -65,10 +65,10 @@ const Batch = () => {
                             fringilla massa a sem ultrices, eget auctor justo condimentum.
                         </p>
                         <div className="flex justify-evenly">
-                            <button className="bg-blue-500 text-white px-4 py-2 rounded-full">
+                            <button className="bg-blue-500 text-white px-4 py-2 rounded-lg">
                               Details
                             </button>
-                            <button className="bg-gray-300 text-gray-700 px-4 py-2 rounded-full">
+                            <button className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg">
                                 Enroll
                             </button>
                         </div>
@@ -88,10 +88,10 @@ const Batch = () => {
                             fringilla massa a sem ultrices, eget auctor justo condimentum.
                         </p>
                         <div className="flex justify-evenly">
-                            <button className="bg-blue-500 text-white px-4 py-2 rounded-full">
+                            <button className="bg-blue-500 text-white px-4 py-2 rounded-lg">
                               Details
                             </button>
-                            <button className="bg-gray-300 text-gray-700 px-4 py-2 rounded-full">
+                            <button className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg">
                                 Enroll
                             </button>
                         </div>
@@ -111,10 +111,10 @@ const Batch = () => {
                             fringilla massa a sem ultrices, eget auctor justo condimentum.
                         </p>
                         <div className="flex justify-evenly">
-                            <button className="bg-blue-500 text-white px-4 py-2 rounded-full">
+                            <button className="bg-blue-500 text-white px-4 py-2 rounded-lg">
                               Details
                             </button>
-                            <button className="bg-gray-300 text-gray-700 px-4 py-2 rounded-full">
+                            <button className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg">
                                 Enroll
                             </button>
                         </div>

@@ -33,13 +33,13 @@ const Navbar = () => {
                                         href="./batch"
                                         className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                                     >
-                                        Batches
+                                        All Batches
                                     </Link>
                                     <Link
-                                        href="#"
+                                        href="./signup"
                                         className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                                     >
-                                        Services
+                                        Sign Up/Log In
                                     </Link>
                                     <Link
                                         href="#"

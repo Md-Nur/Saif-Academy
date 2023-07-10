@@ -14,7 +14,7 @@ const HeroSection = () => {
               Get Started
             </button>
           </div>
-          <div className="md:w-1/2">
+          <div className="md:w-1/2 pr-5">
             <img
               src="/hero.png"
               alt="Online Class"
