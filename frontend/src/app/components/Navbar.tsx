@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import Image from 'next/image';
+import logo from '../../../public/logo.png';
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
 
@@ -18,7 +19,7 @@ const Navbar = () => {
                         <div className="flex items-center justify-between w-full">
                             <div className="flex-shrink-0">
                                 <Link href="#" className="text-white text-lg font-semibold">
-                                    <Image src="/logo.png" alt="Saif Academy" width={50} height={50} />
+                                    <Image src={logo} alt="Saif Academy" className="w-12" />
                                 </Link>
                             </div>
                             <div className="hidden md:block">

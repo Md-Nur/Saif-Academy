@@ -12,11 +12,10 @@ const Batch = () => {
   const [isLoading, setLoading] = useState(true);
   useEffect(() => {
     setLoading(true);
-    fetch("http://localhost:8000/batches")
-      // fetch("https://saif-academy-fodq-67swgz5ub-md-nur.vercel.app/batches")
+      // fetch("http://localhost:8000/batches")
+      fetch("https://saif-academy-fodq-67swgz5ub-md-nur.vercel.app/batches")
       .then((res) => res.json())
       .then((data) => {
-        console.log(typeof data);
         setData(data);
         setLoading(false);
       });
@@ -29,14 +28,14 @@ const Batch = () => {
       </p>
     );
 
-  console.log(data);
+  // console.log(data);
 
   return (
     <div className="container mx-auto p-8">
       <h2 className="text-5xl font-bold mb-5 text-center">Batches</h2>
       <div className="sm:m-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {data.map((batch) => (
-          <div className="bg-white shadow-lg rounded-lg overflow-hidden">
+        {data.map((batch,i) => (
+          <div key={i} className="bg-white shadow-lg rounded-lg overflow-hidden">
             <img
               src={batch.imgUrl}
               alt="Card Image"
