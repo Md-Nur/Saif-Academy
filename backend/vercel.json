@@ -1,6 +1,6 @@
 {
     "builds": [{
-        "src": "back/wsgi.py",
+        "src": "saif_academy/wsgi.py",
         "use": "@natanffs/vercel-python-wsgi",
         "config": { "maxLambdaSize": "15mb", runtime:"python3.9" }
     }],
