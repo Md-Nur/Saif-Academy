@@ -18,7 +18,15 @@ from django.contrib import admin
 from django.urls import path
 from saif_academy import views
 
+from django.urls import re_path
+from django.conf import settings
+from django.views.static import serve
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('batches',views.batches)
+    path('batches',views.batches),
+    re_path(r'^static/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT}),
 ]
+
+
+
+
