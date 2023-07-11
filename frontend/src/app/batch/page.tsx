@@ -6,8 +6,8 @@ const Batch = () => {
   const [isLoading, setLoading] = useState(true);
   useEffect(() => {
     setLoading(true);
-    fetch("http://localhost:8000/batches")
-    
+    // fetch("http://localhost:8000/batches")
+    fetch("https://saif-academy-fodq-67swgz5ub-md-nur.vercel.app/batches")
       .then((res) => res.json())
       .then((data) => {
           console.log(typeof(data))
