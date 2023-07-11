@@ -3,6 +3,8 @@ import { useState } from "react";
 
 const SignupLoginComponent: React.FC = () => {
     const [id, setId] = useState("");
+    const [fullName, setFullName] = useState("");
+    const [classNo, setClassNo] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [isSignup, setIsSignup] = useState(true);
@@ -14,9 +16,35 @@ const SignupLoginComponent: React.FC = () => {
 
     return (
         <div className="flex justify-center items-center h-screen">
-            <form className="lg:w-1/3 md:w-1/2   bg-white shadow-md rounded-lg p-8" onSubmit={handleFormSubmit}>
+            <form className="2xl:w-1/3 md:w-2/3  bg-white shadow-md rounded-lg p-8" onSubmit={handleFormSubmit}>
                 <h2 className="text-2xl mb-4">{isSignup ? "Sign Up" : "Log In"}</h2>
-                <div className="mb-4">
+                <div className={`${isSignup ? "block" : "hidden"}  mb-4 `}>
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="full-name">
+                        Full Name
+                    </label>
+                    <input
+                        className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        id="full-name"
+                        type="text"
+                        placeholder="Full Name"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                    />
+                </div>
+                <div className={`${isSignup ? "block" : "hidden"}  mb-4 `}>
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="class">
+                        Class
+                    </label>
+                    <input
+                        className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        id="class"
+                        type="number"
+                        placeholder="Class"
+                        value={classNo}
+                        onChange={(e) => setClassNo(e.target.value)}
+                    />
+                </div>
+                <div className={`${isSignup ? "hidden" : "block"}  mb-4 `}>
                     <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="id">
                         Registration Id
                     </label>
@@ -44,14 +72,14 @@ const SignupLoginComponent: React.FC = () => {
                 </div>
                 <div className="mb-6">
                     <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
-                       {isSignup ? "Password (min 8 characters)" : "Password"}
+                        {isSignup ? "Password (min 8 characters)" : "Password"}
                     </label>
                     <input
                         className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                         id="password"
                         type="password"
-                       
-                       placeholder={isSignup ? "Create a password" : "Password"}
+
+                        placeholder={isSignup ? "Create a password" : "Password"}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
