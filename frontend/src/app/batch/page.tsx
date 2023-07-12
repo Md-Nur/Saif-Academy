@@ -12,9 +12,8 @@ const Batch = () => {
   const [isLoading, setLoading] = useState(true);
   useEffect(() => {
     setLoading(true);
-      // fetch("http://localhost:8000/batches")
-      fetch("https://saif-academy-fodq-67swgz5ub-md-nur.vercel.app/batches")
-      .then((res) => res.json())
+      fetch(`${process.env.NEXT_PUBLIC_HOST!}/batches`)
+     .then((res) => res.json())
       .then((data) => {
         setData(data);
         setLoading(false);
