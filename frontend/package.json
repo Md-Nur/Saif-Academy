@@ -34,5 +34,11 @@
   "devDependencies": {
     "@tanstack/eslint-plugin-query": "^5.51.15",
     "daisyui": "^4.12.10"
+  },
+  "engines": {
+    "npm": ">=8.7.0"
+  },
+  "overrides": {
+    "react": "$react"
   }
 }
