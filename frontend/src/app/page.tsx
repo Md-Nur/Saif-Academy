@@ -1,11 +1,11 @@
-import Batch from "./batch/page";
-import HeroSection from "./components/Hero";
+import Batch from "./(pages)/batch/Batch";
+import HeroSection from "@/components/Hero";
 
 
 export default function Home() {
   return (
     <main>
       <HeroSection />
-      <Batch />
+      <Batch limit={3} />
     </main>)
 }
