@@ -4,7 +4,7 @@ import { ReactNode } from "react";
 
 const AxiosProvider = ({ children }: { children: ReactNode }) => {
   axios.defaults.baseURL = process.env.NEXT_PUBLIC_HOST;
-//   axios.defaults.withCredentials = true;
+  axios.defaults.withCredentials = true;
 
   return children;
 };
