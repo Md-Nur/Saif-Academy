@@ -10,6 +10,7 @@ frontend//coverage
 
 # next.js
 frontend//.next/
+# frontend//.env
 frontend//out/
 
 # production
@@ -39,5 +40,8 @@ frontend/.next/
 # backend
 
 backend/.venv
+
+# Zip files
+*.zip
 
 

@@ -22,7 +22,8 @@ def get_user(user_id: str):
 
 
 @user_router.post("/signup")
-def create_user(user: User, res: Response):
+def create_user(user, res: Response):
+    print(user)
     # check if user already exists
     if users_db.find_one({"phone": user.phone}):
         raise HTTPException(status_code=400, detail="User already exists")
