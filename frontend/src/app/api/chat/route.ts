@@ -1,6 +1,5 @@
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { streamText } from "ai";
-import { NextResponse } from "next/server";
 
 export const POST = async (req: Request) => {
   const { messages } = await req.json();
@@ -16,8 +15,4 @@ export const POST = async (req: Request) => {
     messages,
   });
   return result.toDataStreamResponse();
-};
-
-export const GET = async (req: Request) => {
-  return NextResponse.json({ message: "Hello World" });
 };

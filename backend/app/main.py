@@ -1,8 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from os import environ
-from routes.user_router import user_router
-from routes.batch_router import batch_router
+from app.routes.user_router import user_router
+from app.routes.batch_router import batch_router
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI()
 

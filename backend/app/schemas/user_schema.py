@@ -1,4 +1,4 @@
-from models.user_model import User
+from app.models.user_model import User
 
 
 def user_entity(user:User) -> dict:
