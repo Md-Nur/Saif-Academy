@@ -17,6 +17,6 @@ export const POST = async (req: Request) => {
   return result.toDataStreamResponse();
 };
 
-export const GET = async () => {
+export const GET = async (req: Request) => {
   return { message: "Hello World" };
 };
