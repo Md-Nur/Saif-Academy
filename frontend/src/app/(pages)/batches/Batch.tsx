@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import Link from "next/link";
 
-const Batch = ({ limit = NaN }: { limit: number }) => {
+const Batch = ({ limit }: { limit?: number }) => {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["batches"],
     queryFn: async () => {
