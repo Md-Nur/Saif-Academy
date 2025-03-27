@@ -5,7 +5,7 @@ const NavRouter = () => {
     <>
       <NavLink to="/" label="Home" />
       <NavLink to="/batches" />
-      <NavLink to="/contact" />
+      <NavLink to="/chat" />
       <NavLink to="/login" />
       <NavLink to="/signup" />
     </>

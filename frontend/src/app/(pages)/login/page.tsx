@@ -27,20 +27,12 @@ const SignUp = () => {
         onSubmit={handleSubmit(onSubmit)}
       >
         <Title title="Sign Up" />
-        <Input name="name" register={register} />
-        <Input name="email" register={register} required={false} />
-        <Input name="phone" register={register} />
+        <Input name="roll" register={register} />
         <Input name="password" register={register} type="password" />
-        <Input name="s_class" register={register} type="number" label="class" />
-        <Input
-          name="edu_inst"
-          register={register}
-          label="Educational Instuite"
-        />
         <SubmitBtn
           label="Sign Up"
-          msg="Already have an account?"
-          link="/login"
+          msg="Don't have an account? Sign Up"
+          link="/signup"
         />
       </form>
     </div>

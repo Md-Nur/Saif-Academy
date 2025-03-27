@@ -7,7 +7,9 @@ const GlobalProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AxiosProvider>
       <TanstackProvider>
-        <StoreProvider>{children}</StoreProvider>
+        {/* <StoreProvider> */}
+          {children}
+          {/* </StoreProvider> */}
       </TanstackProvider>
     </AxiosProvider>
   );
