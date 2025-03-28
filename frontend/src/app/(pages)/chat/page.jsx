@@ -25,11 +25,11 @@ export default function ChatDemo(props) {
   });
 
   return (
-    <div className="flex flex-col h-[500px] w-full max-w-7xl mx-auto px-3 xl:px-9">
+    <div className="flex flex-col h-[500px] w-full max-w-7xl mx-auto p-0 sm:px-3 xl:px-9">
       <Chat
         className="grow"
         messages={messages}
-        handleSubmit={handleSubmit} 
+        handleSubmit={handleSubmit}
         input={input}
         handleInputChange={handleInputChange}
         isGenerating={isLoading}
