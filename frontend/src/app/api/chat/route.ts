@@ -4,7 +4,7 @@ import { streamText } from "ai";
 export const POST = async (req: Request) => {
   const { messages } = await req.json();
 
-  // console.log("message", messages);
+  console.log("message", messages);
 
   const openrouter = createOpenRouter({
     apiKey: process.env.OPENROUTER_API_KEY,
