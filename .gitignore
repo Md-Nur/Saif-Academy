@@ -44,4 +44,7 @@ backend/.venv
 # Zip files
 *.zip
 
+# Vs code files
+.vscode
+
 
