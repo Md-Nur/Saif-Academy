@@ -1,2 +1,9 @@
-venv
+.venv
 .vercel
+.vscode
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python

@@ -1,16 +1,17 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from os import environ
+from fastapi import FastAPI # type: ignore
+from fastapi.middleware.cors import CORSMiddleware # type: ignore
+from os import getenv
 from app.routes.user_router import user_router
 from app.routes.batch_router import batch_router
-from dotenv import load_dotenv
+from dotenv import load_dotenv # type: ignore
+
 
 load_dotenv()
 
 app = FastAPI()
 
 origins = [
-    environ.get("FRONTEND_URL"),
+    getenv("FRONTEND_URL"),
 ]
 
 app.add_middleware(

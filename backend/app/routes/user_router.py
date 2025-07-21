@@ -1,6 +1,6 @@
 # from app.config.db import client
-from fastapi import APIRouter, HTTPException, Response
-from app.models.user_model import User
+from fastapi import APIRouter, HTTPException, Response # type: ignore
+from app.models.user import User
 from app.schemas.user_schema import users_entity, user_entity
 from app.utils.pwdcypt import get_password_hash, verify_password
 from app.utils.tokens import create_token
