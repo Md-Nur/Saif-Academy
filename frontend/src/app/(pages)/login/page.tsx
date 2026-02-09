@@ -1,42 +1,90 @@
 "use client";
-import Input from "@/components/FormItems/Input";
-import SubmitBtn from "@/components/FormItems/SubmitBtn";
-import Title from "@/components/FormItems/Title";
-import { ReactNode, useState } from "react";
-import { SubmitHandler, useForm } from "react-hook-form";
 
-interface IFormValues {
-  name: string;
-  email: string;
-  phone: string;
-  password: string;
-  s_class: number;
-  edu_inst: string;
-  avatar: string;
-}
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { toast } from "react-hot-toast";
+import { Mail, Lock } from "lucide-react";
+import { loginUser } from "@/actions/auth";
 
-const SignUp = () => {
-  const { register, handleSubmit } = useForm<IFormValues>();
-  const onSubmit: SubmitHandler<IFormValues> = async (data: IFormValues) => {
-    console.log(data);
+export default function Login() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    identifier: "",
+    password: "",
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const result = await loginUser(formData);
+      if (result.success) {
+        toast.success("Login successful!");
+        router.refresh();
+        const destination = result.role === "teacher" ? "/dashboard/teacher" : "/dashboard/student";
+        router.push(destination);
+      } else {
+        toast.error(result.error || "Login failed");
+      }
+    } catch (err: any) {
+      toast.error("An unexpected error occurred: " + err.message);
+    } finally {
+      setLoading(false);
+    }
   };
+
   return (
-    <div className="flex justify-center items-center w-full">
-      <form
-        className="w-full max-w-md p-5 bg-base-200 rounded-lg m-5 md:m-10 md:p-10 md:rounded-3xl"
-        onSubmit={handleSubmit(onSubmit)}
-      >
-        <Title title="Sign Up" />
-        <Input name="roll" register={register} />
-        <Input name="password" register={register} type="password" />
-        <SubmitBtn
-          label="Sign Up"
-          msg="Don't have an account? Sign Up"
-          link="/signup"
-        />
-      </form>
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="glass-panel p-8 rounded-2xl w-full max-w-md shadow-2xl shadow-royal-blue/20">
+        <h1 className="text-3xl font-heading font-bold text-white mb-2 text-center">Welcome Back</h1>
+        <p className="text-center text-slate-400 mb-8">Login to your <span className="text-royal-gold font-semibold">Saif Academy</span> account</p>
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="form-control space-y-2">
+            <label className="text-sm font-semibold text-slate-300">Email or Phone</label>
+            <div className="relative flex items-center">
+              <Mail className="absolute left-4 text-slate-500" size={20} />
+              <input 
+                type="text" 
+                placeholder="saif@example.com or 01712345678" 
+                className="input-premium pl-12 h-14"
+                value={formData.identifier}
+                onChange={(e) => setFormData({ ...formData, identifier: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-control space-y-2">
+            <label className="text-sm font-semibold text-slate-300">Password</label>
+            <div className="relative flex items-center">
+              <Lock className="absolute left-4 text-slate-500" size={20} />
+              <input 
+                type="password" 
+                placeholder="••••••••"
+                className="input-premium pl-12 h-14"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+
+          <button 
+            type="submit" 
+            className={`btn-primary-premium w-full mt-2 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+            disabled={loading}
+          >
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </form>
+
+        <p className="text-center mt-6 text-sm text-slate-400">
+          Don't have an account? <Link href="/signup" className="text-royal-gold font-bold hover:underline">Register</Link>
+        </p>
+      </div>
     </div>
   );
-};
-
-export default SignUp;
+}

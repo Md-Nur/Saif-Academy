@@ -1,34 +1,75 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Saif Academy LMS - English Learning Platform
 
-## Getting Started
+A full-stack English Learning Management System (LMS) designed for Class 6-12 students in Bangladesh, featuring multi-role authentication, monthly subscription management, and a glassmorphism UI.
 
-First, run the development server:
+## Tech Stack
+- **Backend:** FastAPI, SQLAlchemy, PostgreSQL
+- **Frontend:** Next.js (App Router), Tailwind CSS v4, DaisyUI
+- **Authentication:** JWT (RS256)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
+## Database Schema (ERD)
+
+```mermaid
+erDiagram
+    Users ||--o{ Subscriptions : "has"
+    Users ||--o{ Batches : "teaches (if Teacher)"
+    Batches ||--o{ Resources : "contains"
+    
+    Users {
+        uuid id PK
+        string name
+        string email UK
+        string hashed_password
+        enum role "teacher | student | admin"
+        int class_level
+        datetime created_at
+    }
+    
+    Batches {
+        uuid id PK
+        string name
+        int class_level
+        uuid teacher_id FK
+    }
+    
+    Subscriptions {
+        uuid id PK
+        uuid user_id FK
+        string trnx_id UK
+        enum status "pending | verified | expired"
+        int amount
+        string month
+        datetime created_at
+        datetime expires_at
+    }
+    
+    Resources {
+        uuid id PK
+        string title
+        string type "pdf | link | video"
+        string url
+        uuid batch_id FK
+    }
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## API Endpoints
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Authentication
+- `POST /auth/register`: Register as a Student or Teacher.
+- `POST /auth/login`: Authenticate and receive a JWT.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+### Subscriptions
+- `POST /subscriptions/`: Submit a payment (Transaction ID).
+- `GET /subscriptions/me`: View my subscription history (Student).
+- `GET /subscriptions/pending`: View all pending verifications (Teacher).
+- `PATCH /subscriptions/{id}/verify`: Verify a student's payment (Teacher).
 
-## Learn More
+### Materials & Classes
+- `GET /materials/live-classes`: Access live class links (Requires verified subscription).
+- `POST /materials/upload`: Upload new resources or lecture videos (Teacher).
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## UI Design
+The platform uses a **"Gravity-Defying"** UI theme:
+- **Royal Blue & White** color palette.
+- **Glassmorphism** (semi-transparent, blurred backgrounds).
+- **DaisyUI** components for a clean, consistent look.

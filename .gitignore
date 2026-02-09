@@ -47,4 +47,6 @@ backend/.venv
 # Vs code files
 .vscode
 
+*.env
+
 

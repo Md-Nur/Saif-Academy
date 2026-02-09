@@ -1,70 +1,92 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import logo from "/public/logo.png";
-import { IoMenu } from "react-icons/io5";
-import { IoMdCloseCircleOutline } from "react-icons/io";
+import logo from "../../../public/logo.png";
+import { Menu, XCircle } from "lucide-react";
 import NavRouter from "./NavRouter";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
-const Navbar = () => {
+const Navbar = ({ user }: { user: any }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-  const toggleNavbar = () => {
-    setIsOpen(!isOpen);
-  };
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <nav className="bg-base-300 sticky top-0 w-full">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center justify-between w-full">
-            <div className="flex-shrink-0">
-              <Link href="/" className="">
-                <Image src={logo} alt="Saif Academy" className="w-14" />
-              </Link>
-            </div>
+    <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${
+      scrolled 
+        ? "py-4 bg-slate-900/80 backdrop-blur-xl border-b border-white/5 shadow-2xl" 
+        : "py-8 bg-transparent"
+    }`}>
+      <div className="container-premium">
+        <div className="flex items-center justify-between gap-4">
+          {/* Left: Brand */}
+          <div className="flex-shrink-0 md:w-48">
+            <Link href="/" className="flex items-center gap-3 group">
+              <div className="relative">
+                <div className="absolute -inset-1 bg-royal-gold rounded-full blur opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                <Image 
+                  src={logo} 
+                  alt="Saif Academy" 
+                  className="relative w-10 h-10 object-contain drop-shadow-lg group-hover:scale-110 transition-transform duration-500" 
+                />
+              </div>
+              <div className="hidden lg:flex flex-col">
+                <span className="font-heading font-black text-lg text-white leading-tight uppercase italic tracking-tighter">Saif <span className="text-royal-gold">Academy</span></span>
+                <span className="text-[9px] text-slate-500 uppercase tracking-[0.3em] font-black">Elite English</span>
+              </div>
+            </Link>
+          </div>
+
+          {/* Center: Main Links */}
+          <div className="hidden md:flex flex-1 justify-center">
+            <ul className="flex items-center gap-6 lg:gap-10 flex-nowrap">
+              <NavRouter mode="main" user={user} />
+            </ul>
+          </div>
+
+          {/* Right: Auth Links & Mobile Toggle */}
+          <div className="flex items-center justify-end gap-6 md:w-64">
             <div className="hidden md:block">
-              <ul className="ml-10 flex items-baseline space-x-4">
-                <NavRouter />
+              <ul className="flex items-center gap-6 flex-nowrap">
+                <NavRouter mode="auth" user={user} />
               </ul>
             </div>
-          </div>
-          <div className="-mr-2 flex md:hidden">
-            <button onClick={toggleNavbar} className="btn btn-ghost">
-              {/* Icon when the navbar is closed */}
-              <IoMenu className={`h-6 w-6 ${isOpen ? "hidden" : "block"}`} />
-
-              {/* Icon when the navbar is open */}
-              <IoMdCloseCircleOutline
-                className={`h-6 w-6 ${isOpen ? "block" : "hidden"}`}
-              />
+            
+            <button 
+              onClick={() => setIsOpen(!isOpen)} 
+              className="md:hidden p-2 text-white hover:text-royal-gold transition-colors"
+            >
+              {isOpen ? <XCircle size={28} /> : <Menu size={28} />}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Mobile menu, show/hide based on menu state */}
-      <motion.ul
-        initial={{
-          opacity: 0,
-        }}
-        whileInView={{
-          opacity: 1,
-        }}
-        transition={{
-          type: "spring",
-          stiffness: 260,
-          damping: 20,
-          duration: 1.5,
-        }}
-        className={`${
-          isOpen ? "flex flex-col gap-2" : "hidden"
-        } md:hidden p-3 pl-10 absolute top-16 my-1 left-0 w-full bg-base-300`}
-      >
-        <NavRouter />
-      </motion.ul>
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden overflow-hidden bg-slate-900/95 backdrop-blur-2xl border-t border-white/5"
+          >
+            <ul className="flex flex-col items-center gap-8 py-12 px-6">
+              <NavRouter mode="main" user={user} />
+              <div className="w-20 h-px bg-white/10" />
+              <NavRouter mode="auth" user={user} />
+            </ul>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 };

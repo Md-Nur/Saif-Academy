@@ -1,11 +1,11 @@
-import { configureStore } from "@reduxjs/toolkit";
+import { configureStore, combineReducers } from "@reduxjs/toolkit";
+import userAuthReducer from "./features/userAuth/userAuthSlice";
 
 export const makeStore = () => {
   return configureStore({
-    reducer: {
-      // Add your reducers here
-      
-    },
+    reducer: combineReducers({
+      userAuth: userAuthReducer,
+    }),
   });
 };
 

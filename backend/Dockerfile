@@ -1,5 +1,4 @@
-FROM python:3.11
-
+FROM python:3.12
 ENV PATH="/home/user/.local/bin:$PATH"
 
 WORKDIR /app

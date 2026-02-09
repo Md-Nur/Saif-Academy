@@ -1,4 +1,63 @@
 @import "tailwindcss";
-@import "tw-animate-css";
-
 @plugin "daisyui";
+
+@theme {
+  --color-royal-blue: #0a192f;
+  --color-royal-blue-light: #112240;
+  --color-royal-gold: #fbbf24;
+  --color-royal-gold-hover: #d97706;
+  --color-glass-bg: rgba(255, 255, 255, 0.05);
+  --color-glass-border: rgba(255, 255, 255, 0.1);
+  --font-heading: var(--font-playfair), serif;
+  --font-body: var(--font-inter), sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-slate-950 text-slate-100 min-h-screen selection:bg-royal-gold selection:text-royal-blue;
+    background-image: 
+      radial-gradient(circle at 15% 50%, rgba(16, 30, 60, 0.4) 0%, transparent 25%), 
+      radial-gradient(circle at 85% 30%, rgba(251, 191, 36, 0.1) 0%, transparent 25%);
+    background-attachment: fixed;
+  }
+}
+
+@layer components {
+  .container-premium {
+    @apply max-w-7xl mx-auto px-6 sm:px-8 lg:px-12;
+  }
+
+  .glass-panel {
+    @apply backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl rounded-2xl p-10 md:p-12;
+  }
+  
+  .glass-card {
+    @apply backdrop-blur-lg bg-white/5 border border-white/10 shadow-xl rounded-xl p-8 transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:-translate-y-1;
+  }
+
+  .btn-primary-premium {
+    @apply px-8 py-4 bg-gradient-to-r from-royal-blue to-royal-blue-light text-white font-semibold rounded-xl shadow-lg hover:shadow-royal-gold/20 hover:scale-[1.02] transition-all duration-300 border border-white/10 text-sm tracking-wide uppercase;
+  }
+
+  .btn-gold {
+    @apply px-8 py-4 bg-gradient-to-r from-yellow-500 to-amber-600 text-white font-bold rounded-xl shadow-lg hover:shadow-amber-500/30 hover:scale-[1.02] transition-all duration-300 border-none text-sm tracking-wide uppercase;
+  }
+
+  .input-premium {
+    @apply w-full bg-white/5 border border-white/10 rounded-xl px-6 py-5 text-white placeholder:text-slate-500 focus:outline-none focus:border-royal-gold/50 focus:bg-white/10 transition-all duration-300;
+  }
+
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-600;
+  }
+
+  .nav-link {
+    @apply px-4 py-2 text-sm font-medium text-slate-300 hover:text-royal-gold transition-all duration-300 relative after:content-[''] after:absolute after:bottom-1 after:left-4 after:right-4 after:h-[2px] after:bg-royal-gold after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300;
+  }
+}
+
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 10, 25, 47;
+  --background-end-rgb: 0, 0, 0;
+}

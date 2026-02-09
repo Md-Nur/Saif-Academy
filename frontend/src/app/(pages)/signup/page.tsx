@@ -1,100 +1,157 @@
 "use client";
-import File from "@/components/FormItems/File";
-import Input from "@/components/FormItems/Input";
-import SubmitBtn from "@/components/FormItems/SubmitBtn";
-import Title from "@/components/FormItems/Title";
-import axios from "axios";
-import { SubmitHandler, useForm } from "react-hook-form";
 
-interface IFormValues {
-  name: string;
-  email: string;
-  phone: string;
-  password: string;
-  s_class: number;
-  edu_inst: string;
-  avatar: string;
-}
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { User, Mail, Lock, BookOpen, Phone, Building } from "lucide-react";
+import { toast } from "react-hot-toast";
+import { registerUser } from "@/actions/auth";
 
-const SignUp = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<IFormValues>();
+export default function Signup() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+    role: "student",
+    class_level: 6,
+    institute_name: "",
+  });
 
-  const imgBBUrl = async (file: any) => {
-    const formData = new FormData();
-    formData.append("image", file);
-
-    const response = await axios.post(
-      `https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMGBB_API_KEY}`,
-      formData
-    );
-    // toast.dismiss();
-    return response.data.data.url;
-  };
-
-  const onSubmit: SubmitHandler<IFormValues> = async (data: IFormValues) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
     try {
-      axios.post("/signup", data);
-    } catch (error) {
-      console.log(error);
+      const result = await registerUser(formData);
+      if (result.success) {
+        toast.success("Account created successfully!");
+        router.refresh();
+        router.push(formData.role === "teacher" ? "/dashboard/teacher" : "/dashboard/student");
+      } else {
+        toast.error(result.error || "Registration failed");
+      }
+    } catch (err) {
+      toast.error("An unexpected error occurred");
+    } finally {
+      setLoading(false);
     }
   };
+
   return (
-    <div className="flex flex-col w-full md:flex-row-reverse justify-around">
-      <div className="m-2 flex flex-col items-center justify-center">
-        <File
-          imgUrl="https://img.freepik.com/free-psd/3d-illustration-human-avatar-profile_23-2150671142.jpg"
-          name="avatar"
-          register={register}
-          errors={errors.avatar}
-        />
+    <div className="min-h-screen flex items-center justify-center p-4 py-12">
+      <div className="glass-panel p-8 rounded-2xl w-full max-w-lg shadow-2xl shadow-royal-blue/20">
+        <h1 className="text-3xl font-heading font-bold text-white mb-2 text-center">Create Account</h1>
+        <p className="text-center text-slate-400 mb-8">Join <span className="text-royal-gold font-semibold">Saif Academy</span> today</p>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="form-control space-y-2">
+            <label className="text-sm font-semibold text-slate-300">Full Name</label>
+            <div className="relative">
+              <User className="absolute left-3 top-3 text-slate-500" size={18} />
+              <input 
+                type="text" 
+                placeholder="Saifullah Mansur" 
+                className="input input-bordered bg-white/5 border-white/10 text-white focus:border-royal-gold focus:outline-none w-full pl-10 placeholder:text-slate-600"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="form-control space-y-2">
+              <label className="text-sm font-semibold text-slate-300">Email</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-3 text-slate-500" size={18} />
+                <input 
+                  type="email" 
+                  placeholder="saif@example.com" 
+                  className="input input-bordered bg-white/5 border-white/10 text-white focus:border-royal-gold focus:outline-none w-full pl-10 placeholder:text-slate-600"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="form-control space-y-2">
+              <label className="text-sm font-semibold text-slate-300">Phone</label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-3 text-slate-500" size={18} />
+                <input 
+                  type="tel" 
+                  placeholder="01712..." 
+                  className="input input-bordered bg-white/5 border-white/10 text-white focus:border-royal-gold focus:outline-none w-full pl-10 placeholder:text-slate-600"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="form-control space-y-2">
+            <label className="text-sm font-semibold text-slate-300">Password</label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-3 text-slate-500" size={18} />
+              <input 
+                type="password" 
+                placeholder="••••••••"
+                className="input input-bordered bg-white/5 border-white/10 text-white focus:border-royal-gold focus:outline-none w-full pl-10 placeholder:text-slate-600"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-control space-y-2">
+            <label className="text-sm font-semibold text-slate-300">Institute Name</label>
+            <div className="relative">
+              <Building className="absolute left-3 top-3 text-slate-500" size={18} />
+              <input 
+                type="text" 
+                placeholder="Dhaka College" 
+                className="input input-bordered bg-white/5 border-white/10 text-white focus:border-royal-gold focus:outline-none w-full pl-10 placeholder:text-slate-600"
+                value={formData.institute_name}
+                onChange={(e) => setFormData({ ...formData, institute_name: e.target.value })}
+                required={false}
+              />
+            </div>
+          </div>
+
+          <div className="form-control space-y-2">
+            <label className="text-sm font-semibold text-slate-300">Class Level</label>
+            <div className="relative">
+              <BookOpen className="absolute left-3 top-3 text-slate-500" size={18} />
+              <select 
+                className="select select-bordered bg-white/5 border-white/10 text-white focus:border-royal-gold focus:outline-none w-full pl-10"
+                value={formData.class_level}
+                onChange={(e) => setFormData({ ...formData, class_level: parseInt(e.target.value) })}
+              >
+                {[6,7,8,9,10,11,12].map(c => (
+                  <option key={c} value={c} className="bg-slate-800">Class {c}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <button 
+            type="submit" 
+            className={`btn-primary-premium w-full mt-6 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+            disabled={loading}
+          >
+            {loading ? "Creating Account..." : "Sign Up"}
+          </button>
+        </form>
+
+        <p className="text-center mt-6 text-sm text-slate-400">
+          Already have an account? <Link href="/login" className="text-royal-gold font-bold hover:underline">Login</Link>
+        </p>
       </div>
-      <form
-        className="w-full max-w-md p-5 bg-base-200 rounded-lg md:m-5 md:m-10 md:p-10 md:rounded-3xl"
-        onSubmit={handleSubmit(onSubmit)}
-      >
-        <Title title="Sign Up" />
-        <Input error={errors.name} name="name" register={register} />
-        <Input
-          error={errors.email}
-          name="email"
-          register={register}
-          required={false}
-        />
-        <Input error={errors.phone} name="phone" register={register} />
-        <Input
-          error={errors.password}
-          name="password"
-          register={register}
-          type="password"
-        />
-        <Input
-          error={errors.s_class}
-          name="s_class"
-          register={register}
-          type="number"
-          label="class"
-          min={1}
-          max={12}
-        />
-        <Input
-          error={errors.edu_inst}
-          required={false}
-          name="edu_inst"
-          register={register}
-          label="Educational Instuite"
-        />
-        <SubmitBtn
-          label="Sign Up"
-          msg="Already have an account? Login"
-          link="/login"
-        />
-      </form>
     </div>
   );
-};
-
-export default SignUp;
+}
