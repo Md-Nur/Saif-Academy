@@ -7,22 +7,24 @@ export default async function StudentDashboard() {
   if (!user) {
     redirect("/login");
   }
-  
+
   // Role-based authorization: only students can access this dashboard
   if (user.role !== "student") {
     redirect("/dashboard/teacher");
   }
-  
+
   const subscriptions = await getMySubscriptions();
-  const liveClasses = await getLiveClasses();
-  const myBatches = await getMyBatches();
-  const myCourses = await getMyCourses();
-  
   const currentMonth = new Date().toISOString().slice(0, 7);
   const isSubscribed = subscriptions.some((s: any) => s.month === currentMonth && s.status === 'verified');
 
+  const [liveClasses, myBatches, myCourses] = await Promise.all([
+    isSubscribed ? getLiveClasses() : Promise.resolve([]),
+    getMyBatches(),
+    getMyCourses()
+  ]);
+
   return (
-    <StudentDashboardClient 
+    <StudentDashboardClient
       initialSubscriptions={subscriptions}
       initialMaterials={liveClasses}
       initialIsSubscribed={isSubscribed}

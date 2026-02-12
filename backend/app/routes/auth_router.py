@@ -1,5 +1,7 @@
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session, select
+from sqlmodel import Session, select, or_
+from sqlalchemy import func
 from app.config.database import get_db
 from app.database import models
 from app.schemas import schemas
@@ -17,12 +19,19 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     
+    # Check if this is the first user in the database
+    user_count_statement = select(func.count()).select_from(models.User)
+    user_count = db.exec(user_count_statement).one()
+    
+    # If first user, make them a teacher, otherwise student
+    role = models.UserRole.TEACHER if user_count == 0 else models.UserRole.STUDENT
+    
     hashed_password = security.hash_password(user.password)
     new_user = models.User(
         name=user.name,
         email=user.email,
         hashed_password=hashed_password,
-        role=models.UserRole.STUDENT,
+        role=role,
         class_level=user.class_level,
         phone=user.phone or "",
         institute_name=user.institute_name or ""
@@ -74,9 +83,72 @@ def update_profile(
         current_user.institute_name = profile_data.institute_name
     if profile_data.class_level is not None:
         current_user.class_level = profile_data.class_level
+    if profile_data.profile_picture is not None:
+        current_user.profile_picture = profile_data.profile_picture
     
     db.add(current_user)
     db.commit()
     db.refresh(current_user)
     return current_user
+
+@router.patch("/promote/{user_id}", response_model=schemas.User)
+def promote_user(
+    user_id: models.uuid.UUID,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Allow any teacher to promote any other user to the TEACHER role.
+    """
+    if current_user.role != models.UserRole.TEACHER:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only teachers can promote other users"
+        )
+    
+    target_user = db.get(models.User, user_id)
+    if not target_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    target_user.role = models.UserRole.TEACHER
+    db.add(target_user)
+    db.commit()
+    db.refresh(target_user)
+    return target_user
+
+@router.get("/users", response_model=List[schemas.User])
+def search_users(
+    q: Optional[str] = None,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Search for users by name, email, or phone. Restricted to teachers.
+    """
+    if current_user.role != models.UserRole.TEACHER:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: Only teachers can search users"
+        )
+    
+    statement = select(models.User)
+    if q:
+        statement = statement.where(
+            or_(
+                models.User.name.ilike(f"%{q}%"),
+                models.User.email.ilike(f"%{q}%"),
+                models.User.phone.ilike(f"%{q}%")
+            )
+        )
+    
+    # Exclude teachers from the search results to avoid re-promoting them 
+    # (though the backend handles it, UI should be cleaner)
+    # Actually, keep them if needed, but let's limit to students for promotion clarity
+    # statement = statement.where(models.User.role == models.UserRole.STUDENT)
+    
+    results = db.exec(statement.limit(20)).all()
+    return results
 

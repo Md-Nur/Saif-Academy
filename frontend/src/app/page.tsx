@@ -1,21 +1,21 @@
-import EntityGrid from "@/components/EntityGrid";
+import EntityGrid from "@/components/ui/EntityGrid";
 import HeroSection from "@/components/Home/Hero";
 import Features from "@/components/Home/Features";
 import Testimonials from "@/components/Home/Testimonials";
 import FloatingContact from "@/components/FloatingContact";
-import SearchBar from "@/components/Nav/SearchBar";
+import SearchBar from "@/components/layout/Nav/SearchBar";
 
 export default function Home() {
   return (
     <main className="relative">
       <HeroSection />
-      
+
       <div className="container-premium -mt-12 relative z-20">
         <SearchBar />
       </div>
 
       <Features />
-      
+
       <div className="bg-slate-900/30 py-16">
         <EntityGrid itemType="batch" limit={3} className="my-32" />
       </div>
@@ -25,7 +25,7 @@ export default function Home() {
       </div>
 
       <Testimonials />
-      
+
       <section className="py-32 bg-gradient-to-b from-slate-950 to-royal-blue relative overflow-hidden">
         <div className="container-premium text-center">
           <div className="glass-panel max-w-4xl mx-auto border-royal-gold/20">

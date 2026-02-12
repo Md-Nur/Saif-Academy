@@ -13,9 +13,14 @@ class UserRole(str, enum.Enum):
 class SubscriptionStatus(str, enum.Enum):
     PENDING = "pending"
     VERIFIED = "verified"
+    REJECTED = "rejected"
     EXPIRED = "expired"
 
 class User(SQLModel, table=True):
+    """
+    Represents a user in the system (Student, Teacher, or Admin).
+    Stores authentication details, profile information, and relationships to subscriptions and batches.
+    """
     __tablename__ = "users"
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
@@ -26,6 +31,7 @@ class User(SQLModel, table=True):
     class_level: Optional[int] = Field(default=None)
     phone: str = Field(unique=True, index=True)
     institute_name: str = Field(default="")
+    profile_picture: Optional[str] = Field(default=None)
     created_at: Optional[datetime] = Field(sa_column=Column(DateTime(timezone=True), server_default=func.now()))
 
     subscriptions: List["Subscription"] = Relationship(back_populates="user")
@@ -47,9 +53,15 @@ class Batch(SQLModel, table=True):
     teacher: Optional["User"] = Relationship(back_populates="batches")
     resources: List["Resource"] = Relationship(back_populates="batch")
     
+    description: Optional[str] = Field(default=None, sa_column=Column(Text))
     meeting_link: Optional[str] = Field(default=None)
+    meeting_link_updated_at: Optional[datetime] = Field(default=None, sa_column=Column(DateTime(timezone=True)))
 
 class Subscription(SQLModel, table=True):
+    """
+    Tracks user payments for batches or courses.
+    Includes transaction ID, payment status, and expiration for monthly subscriptions.
+    """
     __tablename__ = "subscriptions"
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
@@ -109,6 +121,10 @@ class LiveSession(SQLModel, table=True):
     course: Optional["Course"] = Relationship()
 
 class Course(SQLModel, table=True):
+    """
+    Represents a self-paced recorded course.
+    Includes course details, price, and links to hosted videos.
+    """
     __tablename__ = "courses"
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
@@ -125,4 +141,5 @@ class Course(SQLModel, table=True):
     created_at: Optional[datetime] = Field(sa_column=Column(DateTime(timezone=True), server_default=func.now()))
     
     meeting_link: Optional[str] = Field(default=None)
+    meeting_link_updated_at: Optional[datetime] = Field(default=None, sa_column=Column(DateTime(timezone=True)))
 

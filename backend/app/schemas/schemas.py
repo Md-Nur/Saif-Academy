@@ -22,6 +22,7 @@ class User(UserBase):
     id: UUID
     role: UserRole
     class_level: Optional[int] = None
+    profile_picture: Optional[str] = None
     created_at: datetime
 
     class Config:
@@ -32,6 +33,7 @@ class UserUpdate(BaseModel):
     phone: Optional[str] = None
     institute_name: Optional[str] = None
     class_level: Optional[int] = None
+    profile_picture: Optional[str] = None
 
 
 class Token(BaseModel):
@@ -46,6 +48,7 @@ class BatchResponse(BaseModel):
     subject: str
     price_per_month: int
     teacher_id: Optional[UUID]
+    description: Optional[str] = None
     meeting_link: Optional[str] = None
 
     class Config:
@@ -143,6 +146,7 @@ class BatchCreate(BaseModel):
     class_level: int
     subject: str
     price_per_month: Optional[int] = 1000
+    description: Optional[str] = None
     meeting_link: Optional[str] = None
 
 class CourseCreate(BaseModel):

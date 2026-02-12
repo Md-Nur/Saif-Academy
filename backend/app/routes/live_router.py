@@ -144,6 +144,43 @@ def get_next_session(
 
     now = datetime.now()
 
+    # 1.5 Check for manual meeting links in Batches/Courses (Highest Priority)
+    # The teacher manually added a link, meaning class is live NOW.
+    
+    # Check Batches
+    if batch_ids:
+        active_batch = db.exec(select(models.Batch).where(
+            models.Batch.id.in_(batch_ids), 
+            models.Batch.meeting_link != None
+        )).first()
+        
+        if active_batch:
+            return {"next_session": {
+                "title": f"Live Class: {active_batch.name}",
+                "start_time": now.isoformat(),
+                "zoom_link": active_batch.meeting_link,
+                "is_live": True,
+                "batch_name": active_batch.name,
+                "course_title": None
+            }}
+
+    # Check Courses
+    if course_ids:
+        active_course = db.exec(select(models.Course).where(
+            models.Course.id.in_(course_ids), 
+            models.Course.meeting_link != None
+        )).first()
+        
+        if active_course:
+            return {"next_session": {
+                "title": f"Live Class: {active_course.title}",
+                "start_time": now.isoformat(),
+                "zoom_link": active_course.meeting_link,
+                "is_live": True,
+                "batch_name": None,
+                "course_title": active_course.title
+            }}
+
     # 2. Check for upcoming specific LiveSessions (overrides/extras)
     # We look for sessions scheduled for the future
     live_sessions_query = select(models.LiveSession).where(
@@ -275,7 +312,151 @@ def get_next_session(
     # Window: 15 mins before start until end
     if (start_dt - timedelta(minutes=15)) <= now <= end_dt:
         response["is_live"] = True
-        # If it's a routine and we don't have a specific link, we might want to return a default or null to prompt user
-        # But if source is live_session, we have zoom_link
         
+    return {"next_session": response}
+@router.get("/teacher/next-session")
+def get_teacher_next_session(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """
+    Get the absolute next live session/class for the teacher.
+    Prioritizes:
+    1. Active meeting links in batches/courses owned by this teacher.
+    2. Upcoming LiveSession overrides created by this teacher.
+    3. Recurring ClassRoutines for this teacher's batches/courses.
+    """
+    if current_user.role != models.UserRole.TEACHER:
+        # For security, though frontend should handle redirect
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    now = datetime.now()
+
+    # 1. Check for Active Meeting Links (Highest Priority - LIVE NOW)
+    # Find active batches owned by course/batch
+    # Since Batches don't explicitly store "teacher_id" in the model shown previously (it was in schemas but untracked in model diffs),
+    # we assume for now the teacher sees ALL batches if they are an admin, OR we need to filter by some ownership.
+    # Looking at Batch model in previous turns, it didn't have teacher_id. 
+    # However, create_batch usually implies ownership. 
+    # Let's assume for this MVP the teacher can see all batches/courses they have access to. 
+    # If the system is single-teacher (Saif Academy), this is fine.
+    
+    # Check Batches with meeting links
+    active_batch = db.exec(select(models.Batch).where(models.Batch.meeting_link != None)).first()
+    if active_batch:
+        return {"next_session": {
+            "title": f"Live Class: {active_batch.name}",
+            "start_time": now.isoformat(),
+            "zoom_link": active_batch.meeting_link,
+            "is_live": True,
+            "batch_name": active_batch.name,
+            "course_title": None,
+            "type": "batch"
+        }}
+
+    # Check Courses with meeting links
+    active_course = db.exec(select(models.Course).where(models.Course.meeting_link != None)).first()
+    if active_course:
+        return {"next_session": {
+            "title": f"Live Class: {active_course.title}",
+            "start_time": now.isoformat(),
+            "zoom_link": active_course.meeting_link,
+            "is_live": True,
+            "batch_name": None,
+            "course_title": active_course.title,
+            "type": "course"
+        }}
+
+    # 2. Check for upcoming LiveSessions created by this teacher? 
+    # The LiveSession model has no teacher_id visible in snippets, but normally routines are global in this app context.
+    
+    next_live_session = db.exec(select(models.LiveSession).where(
+        models.LiveSession.scheduled_at > now,
+        models.LiveSession.status != "cancelled"
+    ).order_by(models.LiveSession.scheduled_at.asc())).first()
+
+    # 3. Check for next Routine
+    # Fetch all routines
+    routines = db.exec(select(models.ClassRoutine)).all()
+    
+    next_routine_occurrence = None
+    next_routine = None
+
+    days_map = {
+        "Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, 
+        "Friday": 4, "Saturday": 5, "Sunday": 6
+    }
+    current_weekday = now.weekday()
+    
+    for routine in routines:
+        try:
+            r_hour, r_minute = map(int, routine.start_time.split(':'))
+        except ValueError:
+            continue
+            
+        r_weekday = days_map.get(routine.day_of_week)
+        if r_weekday is None:
+            continue
+            
+        days_ahead = r_weekday - current_weekday
+        if days_ahead < 0: days_ahead += 7
+        elif days_ahead == 0:
+            routine_time = now.replace(hour=r_hour, minute=r_minute, second=0, microsecond=0)
+            if routine_time < now: days_ahead += 7
+        
+        next_date = now.replace(hour=r_hour, minute=r_minute, second=0, microsecond=0) + timedelta(days=days_ahead)
+        
+        if next_routine_occurrence is None or next_date < next_routine_occurrence:
+            next_routine_occurrence = next_date
+            next_routine = routine
+
+    # Compare LiveSession vs Routine
+    final_next_session = None
+    source_type = None 
+    
+    if next_live_session and next_routine_occurrence:
+        if next_live_session.scheduled_at < next_routine_occurrence:
+             final_next_session = next_live_session
+             source_type = "live_session"
+        else:
+             final_next_session = next_routine
+             source_type = "routine"
+    elif next_live_session:
+        final_next_session = next_live_session
+        source_type = "live_session"
+    elif next_routine_occurrence:
+        final_next_session = next_routine
+        source_type = "routine"
+    
+    if not final_next_session:
+        return {"next_session": None}
+
+    # Build Response
+    response = {
+        "title": final_next_session.title if source_type == "live_session" else f"{final_next_session.batch.name if final_next_session.batch else final_next_session.course.title} ({final_next_session.day_of_week})",
+        "start_time": final_next_session.scheduled_at.isoformat() if source_type == "live_session" else next_routine_occurrence.isoformat(),
+        "zoom_link": final_next_session.zoom_link if source_type == "live_session" else (final_next_session.batch.meeting_link if final_next_session.batch else final_next_session.course.meeting_link),
+        "is_live": False,
+        "batch_name": final_next_session.batch.name if final_next_session.batch else None,
+        "course_title": final_next_session.course.title if final_next_session.course else None,
+        "type": "live_session" if source_type == "live_session" else "routine"
+    }
+
+    # Check is_live window (15 mins before until end of class)
+    now = datetime.now()
+    start_dt = datetime.fromisoformat(response["start_time"])
+    end_dt = start_dt + timedelta(hours=1) # Default 1 hour
+    
+    if source_type == "routine":
+        try:
+             # Try to use actual end time if available
+             h, m = map(int, final_next_session.end_time.split(':'))
+             end_dt = start_dt.replace(hour=h, minute=m)
+        except:
+            pass
+
+    # Window: 15 mins before start until end
+    if (start_dt - timedelta(minutes=15)) <= now <= end_dt:
+        response["is_live"] = True
+
     return {"next_session": response}

@@ -1,7 +1,7 @@
 import { getMe, getMyBatches, getMyCourses } from "@/lib/data";
 import { redirect } from "next/navigation";
-import Card from "@/components/Card";
-import Title from "@/components/Title";
+import Card from "@/components/ui/Card";
+import Title from "@/components/ui/Title";
 import Link from "next/link";
 
 const MyBatch = async () => {
@@ -14,7 +14,7 @@ const MyBatch = async () => {
     getMyBatches(),
     getMyCourses()
   ]);
-  
+
   return (
     <div className="container-premium pt-24 md:pt-32 min-h-screen pb-20">
       <div className="text-center mb-16">
@@ -27,26 +27,26 @@ const MyBatch = async () => {
       </div>
 
       <div className="space-y-20">
-        
+
         {/* My Batches Section */}
         <section>
           <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
-             <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-               <span className="w-2 h-8 bg-royal-gold rounded-full"></span>
-               My Active Batches
-             </h2>
+            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+              <span className="w-2 h-8 bg-royal-gold rounded-full"></span>
+              My Active Batches
+            </h2>
           </div>
-          
+
           {batches && batches.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {batches.map((batch: any, i: number) => (
                 <Card key={`batch-${i}`} title={batch?.name || batch?.title}>
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex flex-col gap-1 items-start w-full">
-                       <div className="flex gap-2">
-                         {batch?.classLevel && <span className="px-2 py-1 text-[10px] font-black uppercase tracking-wider rounded bg-royal-blue-light border border-white/10 text-royal-gold">Class {batch.classLevel}</span>}
-                         <span className="px-2 py-1 text-[10px] font-black uppercase tracking-wider rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">Live</span>
-                       </div>
+                      <div className="flex gap-2">
+                        {batch?.classLevel && <span className="px-2 py-1 text-[10px] font-black uppercase tracking-wider rounded bg-royal-blue-light border border-white/10 text-royal-gold">Class {batch.classLevel}</span>}
+                        <span className="px-2 py-1 text-[10px] font-black uppercase tracking-wider rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">Live</span>
+                      </div>
                     </div>
                   </div>
                   <p className="mb-4 text-slate-400 text-sm line-clamp-3 leading-relaxed mt-4">{batch?.description}</p>
@@ -69,10 +69,10 @@ const MyBatch = async () => {
         {/* My Courses Section */}
         <section>
           <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
-             <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-               <span className="w-2 h-8 bg-purple-500 rounded-full"></span>
-               My Courses
-             </h2>
+            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+              <span className="w-2 h-8 bg-purple-500 rounded-full"></span>
+              My Courses
+            </h2>
           </div>
 
           {courses && courses.length > 0 ? (
@@ -81,9 +81,9 @@ const MyBatch = async () => {
                 <Card key={`course-${i}`} title={course?.title}>
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex flex-col gap-1 items-start w-full">
-                       <div className="flex gap-2">
-                         <span className="px-2 py-1 text-[10px] font-black uppercase tracking-wider rounded bg-purple-500/10 border border-purple-500/20 text-purple-400">Recorded</span>
-                       </div>
+                      <div className="flex gap-2">
+                        <span className="px-2 py-1 text-[10px] font-black uppercase tracking-wider rounded bg-purple-500/10 border border-purple-500/20 text-purple-400">Recorded</span>
+                      </div>
                     </div>
                   </div>
                   <p className="mb-4 text-slate-400 text-sm line-clamp-3 leading-relaxed mt-4">{course?.description}</p>
@@ -96,7 +96,7 @@ const MyBatch = async () => {
               ))}
             </div>
           ) : (
-             <div className="glass-panel p-8 text-center">
+            <div className="glass-panel p-8 text-center">
               <p className="text-slate-400 mb-4">You haven't purchased any courses yet.</p>
               <Link href="/courses" className="text-royal-gold hover:underline">Browse Courses</Link>
             </div>

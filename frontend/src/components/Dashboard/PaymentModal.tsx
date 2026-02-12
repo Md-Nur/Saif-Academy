@@ -46,7 +46,7 @@ export default function PaymentModal({
     } catch (err) {
       toast.error("An unexpected error occurred");
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
@@ -87,11 +87,10 @@ export default function PaymentModal({
                 <button
                   type="button"
                   onClick={() => setPaymentData({ ...paymentData, payment_method: "bkash" })}
-                  className={`relative p-4 rounded-xl border transition-all group ${
-                    paymentData.payment_method === "bkash"
-                      ? "bg-pink-500/10 border-pink-500 shadow-lg shadow-pink-500/20"
-                      : "bg-white/5 border-white/10 hover:border-pink-500/50"
-                  }`}
+                  className={`relative p-4 rounded-xl border transition-all group ${paymentData.payment_method === "bkash"
+                    ? "bg-pink-500/10 border-pink-500 shadow-lg shadow-pink-500/20"
+                    : "bg-white/5 border-white/10 hover:border-pink-500/50"
+                    }`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className={`text-[10px] font-black uppercase tracking-widest ${paymentData.payment_method === "bkash" ? "text-pink-400" : "text-slate-500"}`}>bKash Personal</span>
@@ -105,11 +104,10 @@ export default function PaymentModal({
                 <button
                   type="button"
                   onClick={() => setPaymentData({ ...paymentData, payment_method: "nagad" })}
-                  className={`relative p-4 rounded-xl border transition-all group ${
-                    paymentData.payment_method === "nagad"
-                      ? "bg-orange-500/10 border-orange-500 shadow-lg shadow-orange-500/20"
-                      : "bg-white/5 border-white/10 hover:border-orange-500/50"
-                  }`}
+                  className={`relative p-4 rounded-xl border transition-all group ${paymentData.payment_method === "nagad"
+                    ? "bg-orange-500/10 border-orange-500 shadow-lg shadow-orange-500/20"
+                    : "bg-white/5 border-white/10 hover:border-orange-500/50"
+                    }`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className={`text-[10px] font-black uppercase tracking-widest ${paymentData.payment_method === "nagad" ? "text-orange-400" : "text-slate-500"}`}>Nagad Personal</span>
@@ -201,15 +199,67 @@ export default function PaymentModal({
                 </div>
                 <div className="form-control space-y-2">
                   <label className="text-xs font-black text-slate-400 uppercase tracking-widest">{t.month}</label>
-                  <input
-                    type="month"
-                    className="input input-bordered bg-white/5 border-white/10 text-white focus:border-royal-gold w-full h-14 px-4"
+                  <select
+                    className="select select-bordered bg-white/5 border-white/10 text-white focus:border-royal-gold focus:outline-none w-full h-14 px-4 rounded-lg [&>option]:bg-slate-900 [&>option]:text-white"
                     value={paymentData.month}
                     onChange={(e) => setPaymentData({ ...paymentData, month: e.target.value })}
                     required
-                  />
+                  >
+                    {(() => {
+                      const now = new Date();
+                      const currentDay = now.getDate();
+                      const currentMonth = now.toISOString().slice(0, 7);
+                      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString().slice(0, 7);
+
+                      // Always allow current month and next month payment
+                      return (
+                        <>
+                          <option value={currentMonth}>{new Date(currentMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} (Current)</option>
+                          <option value={nextMonth}>{new Date(nextMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} (Next)</option>
+                        </>
+                      );
+                    })()}
+                  </select>
                 </div>
               </div>
+
+              {/* Payment Window Notice */}
+              {(() => {
+                const currentDay = new Date().getDate();
+                if (currentDay <= 10) {
+                  return (
+                    <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4 flex items-start gap-3">
+                      <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                        <svg className="w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-green-400 text-sm font-bold">Standard Payment Window</p>
+                        <p className="text-green-300/70 text-xs mt-1">
+                          You can pay for this month or next month. Please pay within the first 10 days to avoid service interruption.
+                        </p>
+                      </div>
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex items-start gap-3">
+                      <div className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                        <svg className="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-amber-400 text-sm font-bold">Late Payment</p>
+                        <p className="text-amber-300/70 text-xs mt-1">
+                          You are paying after the standard window (1st-10th). Please complete payment to maintain access.
+                        </p>
+                      </div>
+                    </div>
+                  );
+                }
+              })()}
 
               <div className="flex gap-4 pt-4">
                 <button

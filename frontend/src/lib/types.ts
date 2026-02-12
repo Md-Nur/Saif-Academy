@@ -36,3 +36,19 @@ export interface User {
   institute_name?: string;
   created_at: string;
 }
+
+export interface Entity {
+  id: string;
+  title?: string;
+  name?: string;
+  classLevel?: number;
+  class_level?: number;
+  description?: string;
+  desc?: string;
+  price?: number;
+  price_per_month?: number;
+  type?: string;
+  course_type?: string;
+  is_free?: boolean;
+  video_url?: string;
+}

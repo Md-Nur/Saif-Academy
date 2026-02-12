@@ -20,7 +20,7 @@ export async function fetcher<T>(endpoint: string, params: any = {}): Promise<T 
     });
     return res.data;
   } catch (error) {
-    if (axios.isAxiosError(error) && error.response?.status === 401) {
+    if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
       return null;
     }
     console.error(`Error fetching ${endpoint}:`, error);

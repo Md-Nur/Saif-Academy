@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { toast } from "react-hot-toast";
-import { User, Mail, Phone, School, GraduationCap, Globe, Save } from "lucide-react";
+import { User, Mail, Phone, School, GraduationCap, Globe, Save, Camera, Loader2 } from "lucide-react";
 import { updateProfile } from "@/actions/auth";
 import { useRouter } from "next/navigation";
+import { uploadToImgBB } from "@/lib/imgbb";
+import { motion, AnimatePresence } from "framer-motion";
 
 const translations = {
   en: {
@@ -20,6 +22,9 @@ const translations = {
     cancel: "Cancel",
     readOnly: "Read Only",
     optional: "Optional",
+    profilePic: "Profile Picture",
+    changePic: "Change Photo",
+    uploading: "Uploading...",
   },
   bn: {
     title: "প্রোফাইল সেটিংস",
@@ -34,6 +39,9 @@ const translations = {
     cancel: "বাতিল করুন",
     readOnly: "শুধুমাত্র পড়ুন",
     optional: "ঐচ্ছিক",
+    profilePic: "প্রোফাইল ছবি",
+    changePic: "ছবি পরিবর্তন করুন",
+    uploading: "আপলোড হচ্ছে...",
   },
 };
 
@@ -44,8 +52,10 @@ export default function ProfileClient({ user }: any) {
     phone: user.phone || "",
     institute_name: user.institute_name || "",
     class_level: user.class_level || "",
+    profile_picture: user.profile_picture || "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const router = useRouter();
 
   const t = translations[lang];
@@ -60,6 +70,7 @@ export default function ProfileClient({ user }: any) {
         phone: formData.phone || null,
         institute_name: formData.institute_name || null,
         class_level: formData.class_level ? parseInt(formData.class_level) : null,
+        profile_picture: formData.profile_picture || null,
       });
 
       if (result.success) {
@@ -72,6 +83,26 @@ export default function ProfileClient({ user }: any) {
       toast.error("An unexpected error occurred");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const url = await uploadToImgBB(file);
+      if (url) {
+        setFormData({ ...formData, profile_picture: url });
+        toast.success(lang === "en" ? "Photo uploaded! Save to persist changes." : "ছবি আপলোড হয়েছে! পরিবর্তন সেভ করুন।");
+      } else {
+        toast.error("Failed to upload image");
+      }
+    } catch (error) {
+      toast.error("Upload error occurred");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -93,6 +124,59 @@ export default function ProfileClient({ user }: any) {
             <Globe size={20} />
             <span className="text-sm font-bold">{lang === "en" ? "বাংলা" : "English"}</span>
           </button>
+        </div>
+
+        {/* Avatar Section */}
+        <div className="flex flex-col items-center mb-10">
+          <div className="relative group">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-royal-gold/30 p-1 bg-slate-900 overflow-hidden relative shadow-2xl shadow-royal-gold/10"
+            >
+              {formData.profile_picture ? (
+                <img
+                  src={formData.profile_picture}
+                  alt="Profile"
+                  className="w-full h-full object-cover rounded-full"
+                />
+              ) : (
+                <div className="w-full h-full bg-royal-blue-light/50 flex items-center justify-center text-royal-gold/30">
+                  <User size={64} />
+                </div>
+              )}
+
+              <AnimatePresence>
+                {isUploading && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-2"
+                  >
+                    <Loader2 className="text-royal-gold animate-spin" size={32} />
+                    <span className="text-[10px] text-royal-gold font-bold uppercase tracking-widest">{t.uploading}</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                <div className="flex flex-col items-center gap-1 text-white">
+                  <Camera size={24} />
+                  <span className="text-[10px] font-black uppercase tracking-tighter">{t.changePic}</span>
+                </div>
+                <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={isUploading} />
+              </label>
+            </motion.div>
+
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="absolute -bottom-2 -right-2 bg-royal-gold text-royal-blue-dark p-2 rounded-full shadow-lg border-4 border-slate-950"
+            >
+              <Camera size={18} />
+            </motion.div>
+          </div>
+          <p className="mt-4 text-xs font-black text-royal-gold uppercase tracking-[0.2em]">{t.profilePic}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">

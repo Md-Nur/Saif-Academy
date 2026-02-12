@@ -12,7 +12,23 @@ load_dotenv()
 # Create tables
 SQLModel.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Saif Academy API")
+from contextlib import asynccontextmanager
+import asyncio
+from app.tasks import cleanup_meeting_links
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Start the background task
+    task = asyncio.create_task(cleanup_meeting_links())
+    yield
+    # Cancel the task on shutdown
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
+
+app = FastAPI(title="Saif Academy API", lifespan=lifespan)
 
 origins = [
     getenv("FRONTEND_URL", "http://localhost:3001"),

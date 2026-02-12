@@ -12,6 +12,7 @@ interface UserDropdownProps {
     name: string;
     email: string;
     role: string;
+    profile_picture?: string;
   };
   onLogout: () => void;
 }
@@ -25,7 +26,7 @@ export default function UserDropdown({ user, onLogout }: UserDropdownProps) {
     try {
       const result = await logoutUser();
       if (result.success) {
-         toast.success("Logged out successfully");
+        toast.success("Logged out successfully");
         onLogout();
         router.push("/");
         router.refresh();
@@ -42,32 +43,36 @@ export default function UserDropdown({ user, onLogout }: UserDropdownProps) {
           onClick={() => setIsOpen(!isOpen)}
           className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 hover:border-royal-gold/50 transition-all group"
         >
-          <div className="w-8 h-8 rounded-full bg-royal-gold/20 border border-royal-gold/30 flex items-center justify-center">
-            <User size={16} className="text-royal-gold" />
+          <div className="w-8 h-8 rounded-full bg-royal-gold/20 border border-royal-gold/30 flex items-center justify-center overflow-hidden">
+            {user.profile_picture ? (
+              <img src={user.profile_picture} alt={user.name} className="w-full h-full object-cover" />
+            ) : (
+              <User size={16} className="text-royal-gold" />
+            )}
           </div>
           <div className="hidden lg:flex flex-col items-start">
             <span className="text-sm font-bold text-white max-w-[100px] sm:max-w-[150px] truncate">{user.name}</span>
             <span className="text-[10px] text-slate-500 uppercase tracking-wider">{user.role}</span>
           </div>
-          <ChevronDown 
-            size={16} 
-            className={`text-slate-400 transition-transform ${isOpen ? "rotate-180" : ""}`} 
+          <ChevronDown
+            size={16}
+            className={`text-slate-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
           />
         </button>
         <AnimatePresence>
           {isOpen && (
             <>
-              <div 
-                className="fixed inset-0 z-40" 
+              <div
+                className="fixed inset-0 z-40"
                 onClick={() => setIsOpen(false)}
-                />
+              />
               <motion.div
                 initial={{ opacity: 0, y: -10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -10, scale: 0.95 }}
                 transition={{ duration: 0.2 }}
                 className="absolute right-0 w-64 glass-panel bg-slate-900/95 border-white/10 shadow-2xl z-50 overflow-hidden"
-                >
+              >
                 <div className="p-1 border-b border-white/10">
                   <p className="text-sm font-bold text-white truncate">{user.name}</p>
                   <p className="text-xs text-slate-400 truncate">{user.email}</p>

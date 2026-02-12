@@ -1,10 +1,10 @@
-import EntityGrid from "@/components/EntityGrid";
+import EntityGrid from "@/components/ui/EntityGrid";
 
 const Batches = () => {
   return (
-    <EntityGrid 
-      itemType="batch" 
-      className="pt-28 md:pt-40 pb-20" 
+    <EntityGrid
+      itemType="batch"
+      className="pt-28 md:pt-40 pb-20"
     />
   );
 };

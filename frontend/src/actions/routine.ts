@@ -122,60 +122,60 @@ export async function deleteRoutine(routineId: string) {
 // Live Session Actions
 
 export async function createSession(sessionData: any) {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("token")?.value;
-  
-    if (!token) {
-      return { error: "Not authenticated" };
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  if (!token) {
+    return { error: "Not authenticated" };
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/live/sessions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(sessionData),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return { error: data.detail || "Failed to create session" };
     }
-  
-    try {
-      const res = await fetch(`${API_URL}/live/sessions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(sessionData),
-      });
-  
-      const data = await res.json();
-  
-      if (!res.ok) {
-        return { error: data.detail || "Failed to create session" };
-      }
-  
-      return { success: true, session: data };
-    } catch (err: any) {
-      return { error: "An unexpected error occurred: " + err.message };
-    }
+
+    return { success: true, session: data };
+  } catch (err: any) {
+    return { error: "An unexpected error occurred: " + err.message };
+  }
 }
 
 export async function getSessions(id: string, type: "batch" | "course" = "batch") {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("token")?.value;
-  
-    if (!token) {
-      return { error: "Not authenticated" };
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  if (!token) {
+    return { error: "Not authenticated" };
+  }
+
+  try {
+    const queryParam = type === "batch" ? `batch_id=${id}` : `course_id=${id}`;
+    const res = await fetch(`${API_URL}/live/sessions?${queryParam}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      return { error: "Failed to fetch sessions" };
     }
-  
-    try {
-      const queryParam = type === "batch" ? `batch_id=${id}` : `course_id=${id}`;
-      const res = await fetch(`${API_URL}/live/sessions?${queryParam}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-  
-      if (!res.ok) {
-        return { error: "Failed to fetch sessions" };
-      }
-  
-      const data = await res.json();
-      return { success: true, sessions: data };
-    } catch (err: any) {
-      return { error: "An unexpected error occurred: " + err.message };
-    }
+
+    const data = await res.json();
+    return { success: true, sessions: data };
+  } catch (err: any) {
+    return { error: "An unexpected error occurred: " + err.message };
+  }
 }
 
 export async function getNextSession() {
@@ -188,6 +188,33 @@ export async function getNextSession() {
 
   try {
     const res = await fetch(`${API_URL}/live/student/next-session`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      cache: 'no-store'
+    });
+
+    if (!res.ok) {
+      return { error: "Failed to fetch next session" };
+    }
+
+    const data = await res.json();
+    return { success: true, nextSession: data.next_session };
+  } catch (err: any) {
+    return { error: "An unexpected error occurred: " + err.message };
+  }
+}
+
+export async function getTeacherNextSession() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  if (!token) {
+    return { error: "Not authenticated" };
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/live/teacher/next-session`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

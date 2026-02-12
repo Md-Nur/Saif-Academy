@@ -31,6 +31,8 @@ def create_course(
     if current_user.role != models.UserRole.TEACHER:
         raise HTTPException(status_code=403, detail="Not authorized")
     
+    from datetime import datetime
+    
     new_course = models.Course(
         title=course.title,
         description=course.description,
@@ -42,7 +44,8 @@ def create_course(
         is_free=course.is_free,
         video_url=course.video_url,
         instituteName=course.instituteName,
-        meeting_link=course.meeting_link
+        meeting_link=course.meeting_link,
+        meeting_link_updated_at=datetime.now() if course.meeting_link else None
     )
     db.add(new_course)
     db.commit()
@@ -64,6 +67,11 @@ def update_course(
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
     
+    # Check if link is updated
+    if course_update.meeting_link != course.meeting_link:
+        from datetime import datetime
+        course.meeting_link_updated_at = datetime.now() if course_update.meeting_link else None
+
     course.title = course_update.title
     course.description = course_update.description
     course.classLevel = course_update.classLevel
@@ -98,3 +106,27 @@ def delete_course(
     db.delete(course)
     db.commit()
     return {"message": "Course deleted successfully"}
+
+@router.patch("/{course_id}/remove-link")
+def remove_course_link(
+    course_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """
+    Teacher-only endpoint to remove the meeting link from a course.
+    """
+    if current_user.role != models.UserRole.TEACHER:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    statement = select(models.Course).where(models.Course.id == course_id)
+    course = db.exec(statement).first()
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+    
+    course.meeting_link = None
+    course.meeting_link_updated_at = None
+    db.add(course)
+    db.commit()
+    db.refresh(course)
+    return {"success": True, "message": "Meeting link removed"}

@@ -40,7 +40,7 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 py-12">
+    <div className="min-h-screen flex items-center justify-center p-4 py-12 my-16">
       <div className="glass-panel p-8 rounded-2xl w-full max-w-lg shadow-2xl shadow-royal-blue/20">
         <h1 className="text-3xl font-heading font-bold text-white mb-2 text-center">Create Account</h1>
         <p className="text-center text-slate-400 mb-8">Join <span className="text-royal-gold font-semibold">Saif Academy</span> today</p>

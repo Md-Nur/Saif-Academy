@@ -1,25 +1,10 @@
-import Card from "@/components/Card";
-import Title from "@/components/Title";
+import Card from "@/components/ui/Card";
+import Title from "@/components/ui/Title";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { getBatches, getCourses, getMe } from "@/lib/data";
-import EnrollmentButton from "./EnrollmentButton";
-
-interface Entity {
-  id: string;
-  title?: string;
-  name?: string;
-  classLevel?: number;
-  class_level?: number;
-  description?: string;
-  desc?: string;
-  price?: number;
-  price_per_month?: number;
-  type?: string;
-  course_type?: string;
-  is_free?: boolean;
-  video_url?: string;
-}
+import EnrollmentButton from "@/components/ui/EnrollmentButton";
+import { Entity } from "@/lib/types";
 
 interface EntityGridProps {
   items?: Entity[];
@@ -30,19 +15,31 @@ interface EntityGridProps {
   itemType: 'batch' | 'course';
 }
 
-export default async function EntityGrid({ 
-  items: initialItems, 
-  title, 
-  limit, 
-  emptyMessage, 
-  className, 
-  itemType 
+/**
+ * EntityGrid Component
+ * 
+ * Renders a grid of 'batches' or 'courses'.
+ * Handles data fetching if items are not provided.
+ * Calculates prices and labels based on the item type and status (free/paid).
+ * 
+ * @param items - Optional pre-fetched list of entities
+ * @param title - Optional title for the grid section
+ * @param limit - Optional limit on the number of items to display
+ * @param itemType - Determines the display logic and data fetching source ('batch' | 'course')
+ */
+export default async function EntityGrid({
+  items: initialItems,
+  title,
+  limit,
+  emptyMessage,
+  className,
+  itemType
 }: EntityGridProps) {
-  
-  // Data Fetching logic moved here
+
+  // Data Fetching logic: if items are not passed as props, fetch based on itemType
   let items = initialItems;
   const user = await getMe();
-  
+
   if (!items) {
     if (itemType === 'batch') {
       items = await getBatches();
@@ -52,13 +49,13 @@ export default async function EntityGrid({
   }
 
   const displayedItems = limit ? (items || []).slice(0, limit) : (items || []);
-  
-  const defaultTitle = title || (itemType === 'batch' 
-    ? (limit ? "Popular Batches" : "All Batches") 
+
+  const defaultTitle = title || (itemType === 'batch'
+    ? (limit ? "Popular Batches" : "All Batches")
     : (limit ? "Featured Courses" : "All Courses"));
-    
-  const defaultEmptyMessage = emptyMessage || (itemType === 'batch' 
-    ? "No batches found at the moment." 
+
+  const defaultEmptyMessage = emptyMessage || (itemType === 'batch'
+    ? "No batches found at the moment."
     : "No courses found at the moment.");
 
   return (
@@ -66,7 +63,7 @@ export default async function EntityGrid({
       <Title>
         <span className="text-gradient-gold">{defaultTitle}</span>
       </Title>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mt-16">
         {displayedItems.map((item, i) => {
           const itemTitle = item.name || item.title || "Untitled";
@@ -75,34 +72,34 @@ export default async function EntityGrid({
           const priceSuffix = isFree ? "" : (itemType === 'batch' ? "/ month" : "(One-time)");
           const description = item.description || item.desc;
           const actionText = isFree ? "Watch Now" : (itemType === 'batch' ? "Join Batch" : "Enroll Now");
-          
+
           let secondaryTag = itemType === 'batch' ? "Live Classes" : (item.course_type || item.type || "Recorded");
           if (isFree) secondaryTag = "Free Course";
 
           const secondaryTagClass = (itemType === 'batch' || item.course_type === 'live')
-            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" 
+            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
             : "bg-royal-gold/10 border-royal-gold/20 text-royal-gold";
 
           return (
             <Card key={i.toString()} title={itemTitle}>
               <div className="flex justify-between items-start mb-2">
-                 <div className="flex flex-col gap-1 items-start w-full">
-                   <div className="flex gap-2">
-                     {(item.classLevel || item.class_level) && (
-                       <span className="px-2 py-1 text-[10px] font-black uppercase tracking-wider rounded bg-royal-blue-light border border-white/10 text-royal-gold">
-                         Class {item.classLevel || item.class_level}
-                       </span>
-                     )}
-                     <span className={`px-2 py-1 text-[10px] font-black uppercase tracking-wider rounded border ${secondaryTagClass}`}>
-                       {secondaryTag}
-                     </span>
-                     {isFree && (
-                       <span className="px-2 py-1 text-[10px] font-black uppercase tracking-wider rounded bg-red-500/10 border-red-500/20 text-red-400">
-                         YouTube
-                       </span>
-                     )}
-                   </div>
-                 </div>
+                <div className="flex flex-col gap-1 items-start w-full">
+                  <div className="flex gap-2">
+                    {(item.classLevel || item.class_level) && (
+                      <span className="px-2 py-1 text-[10px] font-black uppercase tracking-wider rounded bg-royal-blue-light border border-white/10 text-royal-gold">
+                        Class {item.classLevel || item.class_level}
+                      </span>
+                    )}
+                    <span className={`px-2 py-1 text-[10px] font-black uppercase tracking-wider rounded border ${secondaryTagClass}`}>
+                      {secondaryTag}
+                    </span>
+                    {isFree && (
+                      <span className="px-2 py-1 text-[10px] font-black uppercase tracking-wider rounded bg-red-500/10 border-red-500/20 text-red-400">
+                        YouTube
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
               <div className="mb-4">
                 <span className="text-royal-gold font-bold text-lg">{price}</span>
@@ -110,13 +107,13 @@ export default async function EntityGrid({
               </div>
               <p className="mb-4 text-slate-400 text-sm line-clamp-3 leading-relaxed">{description}</p>
               <div className="mt-auto pt-4 flex gap-3">
-                <Link 
+                <Link
                   href={`/${itemType === 'batch' ? 'batches' : 'courses'}/${item.id}`}
                   className="flex-1 py-2 px-4 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-sm font-semibold text-slate-200 text-center"
                 >
                   Details
                 </Link>
-                <EnrollmentButton 
+                <EnrollmentButton
                   itemId={item.id?.toString() || ""}
                   itemType={itemType}
                   itemTitle={itemTitle}

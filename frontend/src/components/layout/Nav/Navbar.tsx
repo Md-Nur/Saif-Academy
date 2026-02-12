@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import logo from "../../../public/logo.png";
+import logo from "@/assets/logo.png";
 import { Menu, XCircle } from "lucide-react";
 import NavRouter from "./NavRouter";
 import { motion, AnimatePresence } from "framer-motion";
