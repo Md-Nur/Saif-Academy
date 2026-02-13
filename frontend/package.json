@@ -11,6 +11,7 @@
   "dependencies": {
     "@openrouter/ai-sdk-provider": "^2.1.1",
     "@reduxjs/toolkit": "^2.11.2",
+    "@tailwindcss/postcss": "^4.1.18",
     "@types/js-cookie": "^3.0.6",
     "ai": "^6.0.77",
     "axios": "^1.13.4",
@@ -27,10 +28,10 @@
     "react-dom": "19.2.3",
     "react-hook-form": "^7.71.1",
     "react-hot-toast": "^2.6.0",
+    "tailwindcss": "^4.1.18",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^20.19.32",
     "@types/react": "^19.2.13",
     "@types/react-dom": "^19.2.3",
@@ -38,7 +39,6 @@
     "eslint": "^9.39.2",
     "eslint-config-next": "16.1.6",
     "react-redux": "^9.2.0",
-    "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3"
   },
   "ignoreScripts": [
