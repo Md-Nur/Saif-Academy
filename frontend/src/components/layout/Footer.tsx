@@ -76,7 +76,7 @@ const Footer = () => {
             &copy; {new Date().getFullYear()} Saif Academy. All rights reserved.
           </p>
           <div className="flex items-center gap-2 text-slate-500 text-sm">
-            <span>Made with ❤️ for</span>
+            <span>Made by code & cognition for</span>
             <span className="text-royal-gold font-bold">Excellence</span>
           </div>
         </div>

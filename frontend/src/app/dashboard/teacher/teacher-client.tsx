@@ -516,7 +516,7 @@ export default function TeacherDashboardClient({ initialPendingSubs, initialStat
           <h1 className="text-4xl font-heading font-bold text-white mb-2 uppercase tracking-tight">Saifullah Sir's <span className="text-royal-gold">Command Center</span></h1>
           <p className="text-slate-400">Total Operational Control: Students, Payments, & Intelligence.</p>
         </div>
-        <div className="flex bg-slate-900 rounded-xl p-1 border border-white/10">
+        <div className="flex bg-slate-900 rounded-xl p-1 border border-white/10 overflow-x-auto max-w-full">
           <button
             onClick={() => handleTabChange("overview")}
             className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === "overview" ? "bg-royal-gold text-royal-blue-light" : "text-slate-400 hover:text-white"}`}
@@ -574,7 +574,7 @@ export default function TeacherDashboardClient({ initialPendingSubs, initialStat
       ) : (
         /* Management UI */
         <div className="space-y-24">
-          <div className="flex bg-slate-900/50 p-2 rounded-2xl border border-white/5 w-fit">
+          <div className="flex flex-wrap justify-center gap-2 bg-slate-900/50 p-2 rounded-2xl border border-white/5 w-full md:w-fit">
             <button
               onClick={() => handleMgmtTabChange("batches")}
               className={`flex items-center gap-3 px-8 py-3 rounded-xl text-sm font-bold transition-all ${mgmtTab === "batches" ? "bg-white/10 text-royal-gold border border-royal-gold/20" : "text-slate-500 hover:text-white"}`}
