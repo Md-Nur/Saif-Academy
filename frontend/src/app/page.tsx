@@ -8,6 +8,8 @@ import Link from "next/link";
 
 // ... existing imports ...
 
+export const dynamic = "force-dynamic";
+
 export default function Home() {
   return (
     <main className="relative">

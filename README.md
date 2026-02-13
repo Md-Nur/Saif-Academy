@@ -89,12 +89,12 @@ This guide details the steps to deploy the Saif Academy application to Vercel as
 2. **Root Directory**: Set the root directory to `backend`.
 3. **Framework Preset**: Select "Other" (or let Vercel detect Python).
 4. **Build Command**: Leave empty (Vercel handles this for Python).
-5. **Output Directory**: Leave empty.
-6. **Environment Variables**:
+5. **Install Command**: Leave empty (Vercel uses `pip` compliant with `requirements.txt`).
+6. **Output Directory**: Leave empty.
+7. **Environment Variables**:
    - `DATABASE_URL`: Your PostgreSQL connection string.
    - `FRONTEND_URL`: URL of your deployed frontend (e.g., `https://saif-academy-frontend.vercel.app`).
-   - `JWT_SECRET`: Your secret key.
-   - `SECRET_KEY`: Your application secret.
+   - `JWT_SECRET_KEY`: Your secret key (same as in your .env).
    - `CLOUDINARY_*`: Your Cloudinary credentials.
 
 ### 2. Frontend Deployment (Next.js)
