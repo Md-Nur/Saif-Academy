@@ -223,8 +223,8 @@ export default function PaymentModal({
                 </div>
               </div>
 
-              {/* Payment Window Notice */}
-              {(() => {
+              {/* Payment Window Notice - Only for Batches (Monthly Subscriptions) */}
+              {paymentData.batch_id && (() => {
                 const currentDay = new Date().getDate();
                 if (currentDay <= 10) {
                   return (

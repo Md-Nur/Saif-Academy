@@ -1,5 +1,5 @@
 
-import { getCourse, getMe } from "@/lib/data";
+import { getCourse, getMe, getMyCourses } from "@/lib/data";
 import EnrollmentButton from "@/components/ui/EnrollmentButton";
 import Link from "next/link";
 import { ArrowLeft, PlayCircle, BookOpen, ShieldCheck, Award, Layers } from "lucide-react";
@@ -15,6 +15,13 @@ export default async function CourseDetails(props: { params: Promise<{ id: strin
 
     const user = await getMe();
     const isFree = course.is_free === true;
+
+    // Enrollment check
+    let isEnrolled = false;
+    if (user && user.role === 'student') {
+        const myCourses = await getMyCourses();
+        isEnrolled = myCourses.some((c: any) => c.id.toString() === params.id);
+    }
 
     // Handle multiple video URLs
     const videoUrls = course.video_url ? course.video_url.split(",") : [];
@@ -180,6 +187,7 @@ export default async function CourseDetails(props: { params: Promise<{ id: strin
                                 videoUrl={course.video_url || undefined}
                                 actionText={isFree ? "Watch on YouTube" : "Enroll Now"}
                                 user={user}
+                                isEnrolled={isEnrolled}
                                 className={`w-full py-4 text-base ${isFree ? "bg-red-600 hover:bg-red-700 text-white" : "bg-royal-gold text-royal-blue-dark hover:bg-white"} hover:scale-[1.02] active:scale-[0.98] shadow-lg`}
                             />
 

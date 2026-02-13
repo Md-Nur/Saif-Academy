@@ -9,6 +9,7 @@ from app.utils import security
 from jose import JWTError, jwt
 from fastapi.security import OAuth2PasswordBearer
 from app.dependencies import get_current_user
+from app.utils.email import send_reset_password_email
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -144,11 +145,60 @@ def search_users(
             )
         )
     
-    # Exclude teachers from the search results to avoid re-promoting them 
-    # (though the backend handles it, UI should be cleaner)
-    # Actually, keep them if needed, but let's limit to students for promotion clarity
+    # Exclude teachers from the search results to avoid re-promoting them
     # statement = statement.where(models.User.role == models.UserRole.STUDENT)
     
     results = db.exec(statement.limit(20)).all()
     return results
+
+@router.post("/forgot-password")
+def forgot_password(
+    request: schemas.ForgotPasswordRequest,
+    db: Session = Depends(get_db)
+):
+    statement = select(models.User).where(models.User.email == request.email)
+    user = db.exec(statement).first()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="No account found with this email address.")
+    
+    # Generate 15 minute token
+    expires = security.timedelta(minutes=15)
+    token = security.create_access_token(
+        data={"sub": str(user.id), "type": "password_reset"},
+        expires_delta=expires
+    )
+    
+    reset_url = f"{security.getenv('FRONTEND_URL', 'http://localhost:3000')}/reset-password?token={token}"
+    
+    # Send real email
+    send_reset_password_email(user.email, reset_url)
+    
+    return {"message": "If an account exists with this email, a reset link has been sent."}
+
+@router.post("/reset-password")
+def reset_password(
+    request: schemas.ResetPasswordRequest,
+    db: Session = Depends(get_db)
+):
+    try:
+        payload = jwt.decode(request.token, security.SECRET_KEY, algorithms=[security.ALGORITHM])
+        user_id = payload.get("sub")
+        token_type = payload.get("type")
+        
+        if not user_id or token_type != "password_reset":
+            raise HTTPException(status_code=400, detail="Invalid token")
+            
+        user = db.get(models.User, user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+            
+        user.hashed_password = security.hash_password(request.new_password)
+        db.add(user)
+        db.commit()
+        
+        return {"success": True, "message": "Password updated successfully"}
+        
+    except JWTError:
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
 

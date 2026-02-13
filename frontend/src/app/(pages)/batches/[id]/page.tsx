@@ -1,5 +1,5 @@
 
-import { getBatch, getMe, getRoutines } from "@/lib/data";
+import { getBatch, getMe, getRoutines, getMyBatches } from "@/lib/data";
 import EnrollmentButton from "@/components/ui/EnrollmentButton";
 import Title from "@/components/ui/Title";
 import { notFound } from "next/navigation";
@@ -17,6 +17,13 @@ export default async function BatchDetails(props: { params: Promise<{ id: string
 
     const user = await getMe();
     const routines = await getRoutines(params.id);
+
+    // Enrollment check
+    let isEnrolled = false;
+    if (user && user.role === 'student') {
+        const myBatches = await getMyBatches();
+        isEnrolled = myBatches.some((b: any) => b.id.toString() === params.id);
+    }
 
     return (
         <main className="min-h-screen pt-32 pb-20 relative">
@@ -135,6 +142,7 @@ export default async function BatchDetails(props: { params: Promise<{ id: string
                                 price={batch.price_per_month}
                                 isFree={false}
                                 user={user}
+                                isEnrolled={isEnrolled}
                                 actionText="Join Batch Now"
                                 className="w-full py-4 text-base bg-royal-gold text-royal-blue-dark hover:bg-white hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-royal-gold/20"
                             />

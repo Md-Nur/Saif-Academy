@@ -373,3 +373,102 @@ export async function removeCourseLink(id: string) {
     return { error: formatError(err.message) };
   }
 }
+
+// Quiz Management
+export async function createQuizQuestion(data: any) {
+  const token = await getAuthToken();
+  if (!token) return { error: "Unauthorized" };
+
+  try {
+    const res = await fetch(`${API_URL}/quizzes/questions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      return { error: formatError(errorData.detail) || "Failed to create question" };
+    }
+
+    revalidatePath("/dashboard/teacher");
+    return { success: true };
+  } catch (err: any) {
+    return { error: formatError(err.message) };
+  }
+}
+
+export async function deleteQuizQuestion(id: string) {
+  const token = await getAuthToken();
+  if (!token) return { error: "Unauthorized" };
+
+  try {
+    const res = await fetch(`${API_URL}/quizzes/questions/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      return { error: formatError(errorData.detail) || "Failed to delete question" };
+    }
+
+    revalidatePath("/dashboard/teacher");
+    return { success: true };
+  } catch (err: any) {
+    return { error: formatError(err.message) };
+  }
+}
+
+export async function getSubmissions() {
+  const token = await getAuthToken();
+  if (!token) return { error: "Unauthorized" };
+
+  try {
+    const res = await fetch(`${API_URL}/submissions/all`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      return { error: formatError(errorData.detail) || "Failed to fetch" };
+    }
+
+    const submissions = await res.json();
+    return { success: true, submissions };
+  } catch (err: any) {
+    return { error: formatError(err.message) };
+  }
+}
+
+export async function deleteSubmission(id: string) {
+  const token = await getAuthToken();
+  if (!token) return { error: "Unauthorized" };
+
+  try {
+    const res = await fetch(`${API_URL}/submissions/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      return { error: formatError(errorData.detail) || "Failed to delete" };
+    }
+
+    revalidatePath("/dashboard/teacher");
+    return { success: true };
+  } catch (err: any) {
+    return { error: formatError(err.message) };
+  }
+}

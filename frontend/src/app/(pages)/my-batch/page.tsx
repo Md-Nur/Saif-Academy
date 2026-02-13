@@ -82,15 +82,20 @@ const MyBatch = async () => {
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex flex-col gap-1 items-start w-full">
                       <div className="flex gap-2">
-                        <span className="px-2 py-1 text-[10px] font-black uppercase tracking-wider rounded bg-purple-500/10 border border-purple-500/20 text-purple-400">Recorded</span>
+                        <span className={`px-2 py-1 text-[10px] font-black uppercase tracking-wider rounded border ${course?.course_type === 'live' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-purple-500/10 border-purple-500/20 text-purple-400'}`}>
+                          {course?.course_type === 'live' ? 'Live' : 'Recorded'}
+                        </span>
                       </div>
                     </div>
                   </div>
                   <p className="mb-4 text-slate-400 text-sm line-clamp-3 leading-relaxed mt-4">{course?.description}</p>
                   <div className="mt-auto pt-4">
-                    <button className="w-full py-3 px-4 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-sm font-semibold text-slate-200">
+                    <Link
+                      href={`/courses/${course.id}`}
+                      className="block w-full text-center py-3 px-4 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-sm font-semibold text-slate-200"
+                    >
                       Start Learning
-                    </button>
+                    </Link>
                   </div>
                 </Card>
               ))}

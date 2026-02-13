@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, XCircle, ChevronRight, RefreshCcw, HelpCircle } from 'lucide-react';
+import { CheckCircle2, XCircle, ChevronRight, RefreshCcw, HelpCircle, Loader2 } from 'lucide-react';
+import { getServerQuizQuestions } from "@/actions/quiz";
 
 interface Question {
-  id: number;
+  id: string | number;
   question: string;
   options: string[];
   correctAnswer: number;
@@ -38,17 +39,46 @@ const sampleQuestions: Question[] = [
 ];
 
 export default function QuizEngine() {
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [score, setScore] = useState(0);
   const [quizComplete, setQuizComplete] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const data = await getServerQuizQuestions();
+        if (data && data.length > 0) {
+          // Map backend fields to frontend interface if they differ
+          const mappedQuestions = data.map((q: any) => ({
+            id: q.id,
+            question: q.question,
+            options: q.options,
+            correctAnswer: q.correct_answer,
+            explanation: q.explanation
+          }));
+          setQuestions(mappedQuestions);
+        } else {
+          setQuestions(sampleQuestions);
+        }
+      } catch (err) {
+        console.error("Failed to fetch quizzes", err);
+        setQuestions(sampleQuestions);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchQuestions();
+  }, []);
 
   const handleOptionSelect = (index: number) => {
     if (showFeedback) return;
     setSelectedOption(index);
     setShowFeedback(true);
-    if (index === sampleQuestions[currentQuestion].correctAnswer) {
+    if (index === questions[currentQuestion].correctAnswer) {
       setScore(score + 1);
     }
   };
@@ -56,7 +86,7 @@ export default function QuizEngine() {
   const nextQuestion = () => {
     setSelectedOption(null);
     setShowFeedback(false);
-    if (currentQuestion + 1 < sampleQuestions.length) {
+    if (currentQuestion + 1 < questions.length) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
       setQuizComplete(true);
@@ -71,6 +101,15 @@ export default function QuizEngine() {
     setQuizComplete(false);
   };
 
+  if (loading) {
+    return (
+      <div className="glass-panel p-20 flex flex-col items-center justify-center space-y-4">
+        <Loader2 className="w-8 h-8 text-royal-gold animate-spin" />
+        <p className="text-slate-400 font-medium">Loading Grammar Challenges...</p>
+      </div>
+    );
+  }
+
   if (quizComplete) {
     return (
       <div className="glass-panel p-10 text-center space-y-6">
@@ -78,7 +117,7 @@ export default function QuizEngine() {
           <CheckCircle2 size={40} className="text-royal-gold" />
         </div>
         <h3 className="text-3xl font-heading font-bold text-white uppercase italic">Quiz Complete!</h3>
-        <p className="text-slate-400">You scored <span className="text-royal-gold font-bold">{score}</span> out of <span className="text-white font-bold">{sampleQuestions.length}</span></p>
+        <p className="text-slate-400">You scored <span className="text-royal-gold font-bold">{score}</span> out of <span className="text-white font-bold">{questions.length}</span></p>
         <button onClick={resetQuiz} className="btn-gold flex items-center gap-2 mx-auto">
           <RefreshCcw size={18} /> Try Again
         </button>
@@ -86,17 +125,17 @@ export default function QuizEngine() {
     );
   }
 
-  const q = sampleQuestions[currentQuestion];
+  const q = questions[currentQuestion];
 
   return (
     <div className="glass-panel p-8 space-y-8 relative overflow-hidden">
       <div className="absolute top-0 right-0 p-4">
-        <span className="text-slate-500 font-bold text-sm tracking-widest">{currentQuestion + 1} / {sampleQuestions.length}</span>
+        <span className="text-slate-500 font-bold text-sm tracking-widest">{currentQuestion + 1} / {questions.length}</span>
       </div>
 
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-royal-gold text-xs font-bold uppercase tracking-widest">
-           <HelpCircle size={14} /> Grammar Practice
+          <HelpCircle size={14} /> Grammar Practice
         </div>
         <h3 className="text-xl font-bold text-white leading-relaxed">{q.question}</h3>
       </div>
@@ -133,18 +172,18 @@ export default function QuizEngine() {
 
       <AnimatePresence>
         {showFeedback && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className="p-5 bg-white/5 border border-white/10 rounded-xl space-y-2"
           >
             <p className="text-sm font-bold text-royal-gold uppercase tracking-widest">Explanation</p>
             <p className="text-slate-400 text-sm italic">{q.explanation}</p>
-            <button 
+            <button
               onClick={nextQuestion}
               className="mt-4 w-full flex items-center justify-center gap-2 text-white font-bold bg-royal-gold/20 py-3 rounded-lg hover:bg-royal-gold/30 transition-colors"
             >
-              {currentQuestion + 1 < sampleQuestions.length ? "Next Question" : "View Results"} <ChevronRight size={18} />
+              {currentQuestion + 1 < questions.length ? "Next Question" : "View Results"} <ChevronRight size={18} />
             </button>
           </motion.div>
         )}

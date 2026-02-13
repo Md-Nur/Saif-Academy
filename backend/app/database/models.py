@@ -1,6 +1,6 @@
 from typing import Optional, List
 from sqlmodel import SQLModel, Field, Relationship
-from sqlalchemy import Column, Enum, DateTime, func, Text
+from sqlalchemy import Column, Enum, DateTime, func, Text, JSON
 import enum
 import uuid
 from datetime import datetime
@@ -11,10 +11,10 @@ class UserRole(str, enum.Enum):
     ADMIN = "admin"
 
 class SubscriptionStatus(str, enum.Enum):
-    PENDING = "pending"
-    VERIFIED = "verified"
-    REJECTED = "rejected"
-    EXPIRED = "expired"
+    PENDING = "PENDING"
+    VERIFIED = "VERIFIED"
+    REJECTED = "REJECTED"
+    EXPIRED = "EXPIRED"
 
 class User(SQLModel, table=True):
     """
@@ -89,8 +89,26 @@ class Resource(SQLModel, table=True):
     type: str # "pdf", "link", "video"
     url: str
     batch_id: Optional[uuid.UUID] = Field(default=None, foreign_key="batches.id")
+    course_id: Optional[uuid.UUID] = Field(default=None, foreign_key="courses.id")
 
     batch: Optional["Batch"] = Relationship(back_populates="resources")
+    course: Optional["Course"] = Relationship()
+
+class StudentSubmission(SQLModel, table=True):
+    __tablename__ = "student_submissions"
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="users.id")
+    batch_id: Optional[uuid.UUID] = Field(default=None, foreign_key="batches.id")
+    course_id: Optional[uuid.UUID] = Field(default=None, foreign_key="courses.id")
+    title: str
+    type: str # "hw", "cw"
+    url: str = Field(sa_column=Column(Text))
+    created_at: Optional[datetime] = Field(sa_column=Column(DateTime(timezone=True), server_default=func.now()))
+
+    user: Optional["User"] = Relationship()
+    batch: Optional["Batch"] = Relationship()
+    course: Optional["Course"] = Relationship()
 
 class ClassRoutine(SQLModel, table=True):
     __tablename__ = "class_routines"
@@ -143,3 +161,30 @@ class Course(SQLModel, table=True):
     meeting_link: Optional[str] = Field(default=None)
     meeting_link_updated_at: Optional[datetime] = Field(default=None, sa_column=Column(DateTime(timezone=True)))
 
+class QuizQuestion(SQLModel, table=True):
+    """
+    Represents a grammar quiz question.
+    """
+    __tablename__ = "quiz_questions"
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    question: str = Field(sa_column=Column(Text))
+    options: List[str] = Field(sa_column=Column(JSON))
+    correct_answer: int
+    explanation: str = Field(sa_column=Column(Text))
+    created_at: Optional[datetime] = Field(sa_column=Column(DateTime(timezone=True), server_default=func.now()))
+
+class Testimonial(SQLModel, table=True):
+    """
+    Represents a student testimonial displayed on the home page.
+    """
+    __tablename__ = "testimonials"
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    name: str
+    role: str  # e.g., "HSC Student", "SSC Student"
+    content: str = Field(sa_column=Column(Text))
+    rating: int = Field(default=5)  # 1-5 stars
+    avatar: Optional[str] = Field(default=None)  # URL to avatar image
+    is_approved: bool = Field(default=False)  # Only approved testimonials are shown
+    created_at: Optional[datetime] = Field(sa_column=Column(DateTime(timezone=True), server_default=func.now()))

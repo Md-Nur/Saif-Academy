@@ -27,7 +27,8 @@ def upload_material(
         title=resource.title,
         type=resource.type,
         url=resource.url,
-        batch_id=resource.batch_id
+        batch_id=resource.batch_id,
+        course_id=resource.course_id
     )
     db.add(new_resource)
     db.commit()

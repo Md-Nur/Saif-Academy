@@ -14,6 +14,7 @@ interface EnrollmentButtonProps {
   actionText: string;
   className?: string;
   user?: any;
+  isEnrolled?: boolean;
 }
 
 type Optional<T> = T | null | undefined;
@@ -27,11 +28,17 @@ export default function EnrollmentButton({
   videoUrl,
   actionText,
   className,
-  user
+  user,
+  isEnrolled
 }: EnrollmentButtonProps) {
   const router = useRouter();
 
   const handleAction = () => {
+    if (isEnrolled) {
+      router.push("/dashboard/student");
+      return;
+    }
+
     if (isFree && videoUrl) {
       window.open(videoUrl, '_blank');
       return;
@@ -55,19 +62,21 @@ export default function EnrollmentButton({
     params.set("type", itemType);
     params.set("title", itemTitle);
     params.set("price", price.toString());
-    
+
     router.push(`/dashboard/student?${params.toString()}`);
   };
 
+  const displayText = isEnrolled ? "Already Enrolled" : actionText;
+
   return (
-    <button 
+    <button
       onClick={handleAction}
       className={cn(
         "flex-1 py-2 px-4 rounded-lg font-bold transition-all shadow-lg text-sm whitespace-nowrap",
-        className
+        isEnrolled ? "bg-white/5 border border-white/10 text-slate-400 hover:bg-white/10" : className
       )}
     >
-      {actionText}
+      {displayText}
     </button>
   );
 }

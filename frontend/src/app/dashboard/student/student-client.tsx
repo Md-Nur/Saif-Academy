@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import { PlayCircle, CreditCard, CheckCircle, AlertCircle, Calendar, Lock, Globe, Clock, FileText, Send, HelpCircle, Sparkles, Bot } from "lucide-react";
+import { AlertCircle, HelpCircle, Sparkles, Bot, CloudUpload, Check, Trash2 } from "lucide-react";
 import { startOfWeek, endOfWeek, eachDayOfInterval, format, isSameDay } from "date-fns";
 import { getNextSession } from "@/actions/routine";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,8 +10,16 @@ import QuizEngine from "@/components/Practice/QuizEngine";
 import GrammarAssistant from "@/components/AI/GrammarAssistant";
 import Link from "next/link";
 import PaymentModal from "@/components/Dashboard/PaymentModal";
+import { uploadSubmission, getMySubmissions } from "@/actions/student";
+
+// Modular Components
+import StudentHeader from "./components/StudentHeader";
+import LiveClassBanner from "./components/LiveClassBanner";
+import WritingLab from "./components/WritingLab";
+import PaymentHistory from "./components/PaymentHistory";
 
 const translations = {
+  // ... existing translations ...
   en: {
     dashboard: "My Dashboard",
     welcome: "Welcome back to",
@@ -93,8 +101,6 @@ export default function StudentDashboardClient({
 }: any) {
   const [lang, setLang] = useState<"en" | "bn">("en");
   const [subscriptions, setSubscriptions] = useState(initialSubscriptions);
-  const [materials, setMaterials] = useState(initialMaterials);
-  const [isSubscribed, setIsSubscribed] = useState(initialIsSubscribed);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentData, setPaymentData] = useState({
     trnx_id: "",
@@ -108,6 +114,15 @@ export default function StudentDashboardClient({
   });
 
   const [nextSession, setNextSession] = useState<any>(null);
+  const [userSubmissions, setUserSubmissions] = useState<any[]>(initialMaterials?.submissions || []);
+  const [isUploading, setIsUploading] = useState(false);
+  const [submissionForm, setSubmissionForm] = useState({
+    title: "",
+    type: "hw" as "hw" | "cw",
+    urls: [] as string[],
+    batch_id: undefined as string | undefined,
+    course_id: undefined as string | undefined
+  });
 
   useEffect(() => {
     async function fetchNextSession() {
@@ -117,9 +132,42 @@ export default function StudentDashboardClient({
       }
     }
     fetchNextSession();
+    fetchSubmissions();
   }, []);
 
+  const fetchSubmissions = async () => {
+    const res = await getMySubmissions();
+    if (res.success) {
+      setUserSubmissions(res.submissions);
+    }
+  };
 
+  const handleSubmissionUpload = async () => {
+    if (!submissionForm.title || submissionForm.urls.length === 0) {
+      toast.error("Please provide title and at least one image");
+      return;
+    }
+    if (!submissionForm.batch_id && !submissionForm.course_id) {
+      toast.error("Please select a Batch or Course");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const res = await uploadSubmission(submissionForm);
+      if (res.success) {
+        toast.success("Submission sent to Saifullah Sir!");
+        setSubmissionForm({ ...submissionForm, title: "", urls: [] });
+        fetchSubmissions();
+      } else {
+        toast.error(res.error || "Upload failed");
+      }
+    } catch (err) {
+      toast.error("An unexpected error occurred");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const t = translations[lang];
 
@@ -129,6 +177,19 @@ export default function StudentDashboardClient({
     ...allCourses.map((c: any) => ({ ...c, type: 'course', displayName: `[Course] ${c.title} - ${c.subject}` }))
   ];
 
+  // Set default selection for submission form if enrolled
+  useEffect(() => {
+    if (allSelectableItems.length > 0 && !submissionForm.batch_id && !submissionForm.course_id) {
+      const firstItem = allSelectableItems[0];
+      if (firstItem.type === 'batch') {
+        setSubmissionForm(prev => ({ ...prev, batch_id: firstItem.id, course_id: undefined }));
+      } else {
+        setSubmissionForm(prev => ({ ...prev, course_id: firstItem.id, batch_id: undefined }));
+      }
+    }
+  }, [allSelectableItems.length]);
+
+  const hasBatches = allBatches.length > 0;
   const hasEnrollments = allSelectableItems.length > 0;
 
   // Subscription Status State
@@ -136,13 +197,11 @@ export default function StudentDashboardClient({
   const [daysLeft, setDaysLeft] = useState(0);
 
   useEffect(() => {
-    // Basic validity check
     const latestVerified = [...subscriptions]
-      .filter((s: any) => s.status === 'verified')
+      .filter((s: any) => s.status?.toLowerCase() === 'verified' && s.batch_id)
       .sort((a: any, b: any) => new Date(b.month).getTime() - new Date(a.month).getTime())[0];
 
     if (latestVerified) {
-      // Expiry is 1st of next month
       const expiryDate = new Date(latestVerified.month);
       expiryDate.setMonth(expiryDate.getMonth() + 1);
 
@@ -155,15 +214,7 @@ export default function StudentDashboardClient({
       if (days > 0) {
         setSubStatus('active');
       } else {
-        // Grace Period Logic: First 10 days of the month
         const currentDay = now.getDate();
-        // Check if the latest verified subscription was for the IMMEDIATELY preceding month
-        // logic: expiryDate (1st of this month) should be close to now.
-        // If expiryDate was months ago, then diff is very negative.
-        // We only allow grace if we are in the month immediately following the expiry.
-        const isNextMonth = now.getMonth() === expiryDate.getMonth() && now.getFullYear() === expiryDate.getFullYear(); // Wait, if expiry is set to next month 1st...
-
-        // Simpler check: If today is 1st-10th, give grace.
         if (currentDay <= 10) {
           setSubStatus('grace');
         } else {
@@ -175,8 +226,6 @@ export default function StudentDashboardClient({
       setSubStatus('expired');
     }
   }, [subscriptions]);
-
-
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -195,147 +244,26 @@ export default function StudentDashboardClient({
       }));
       setShowPaymentModal(true);
       toast.success(`Enrolling in ${title}`);
-
-      // Clear URL parameters without refresh
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
 
-  // handlePayment moved to PaymentModal
-
-  const currentMonthPending = subscriptions.find((s: any) => s.month === paymentData.month && s.status === 'pending');
+  const currentMonthPending = subscriptions.find((s: any) => s.month === paymentData.month && s.status?.toLowerCase() === 'pending');
 
   return (
     <div className="container-premium pt-28 md:pt-40 space-y-32 min-h-screen">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 glass-panel p-10 border-royal-gold/20">
-        <div className="flex items-center gap-6">
-          <div className="relative">
-            <div className="absolute -inset-1 bg-royal-gold rounded-full blur opacity-25"></div>
-            <button
-              onClick={() => setLang(lang === "en" ? "bn" : "en")}
-              className="relative p-3 bg-slate-900 rounded-full text-royal-gold hover:scale-110 transition-transform border border-white/10 flex items-center gap-2 px-4"
-            >
-              <Globe size={20} />
-              <span className="text-sm font-bold">{lang === "en" ? "বাংলা" : "English"}</span>
-            </button>
-          </div>
-          <div>
-            <h1 className="text-3xl md:text-4xl font-heading font-bold text-white uppercase tracking-tight">{t.dashboard}</h1>
-            <p className="text-slate-400">{t.welcome} <span className="text-royal-gold font-bold">{t.academy}</span></p>
-          </div>
-        </div>
+      <StudentHeader
+        t={t}
+        lang={lang}
+        setLang={setLang}
+        hasBatches={hasBatches}
+        subStatus={subStatus}
+        daysLeft={daysLeft}
+        hasEnrollments={hasEnrollments}
+        setShowPaymentModal={setShowPaymentModal}
+      />
 
-
-        <div className="flex flex-col items-end gap-2">
-          {subStatus === 'active' ? (
-            <div className="flex items-center gap-4 bg-green-500/10 border border-green-500/20 px-6 py-3 rounded-2xl">
-              <div className="text-right">
-                <p className="text-[10px] text-green-400 font-bold uppercase tracking-widest">{t.validity}</p>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-black text-white">{daysLeft}</span>
-                  <span className="text-sm text-slate-400">{t.daysRemaining}</span>
-                </div>
-              </div>
-              <div className="w-12 h-12 rounded-full border-4 border-slate-800 border-t-green-500 flex items-center justify-center relative">
-                <Clock size={20} className="text-green-400" />
-              </div>
-            </div>
-          ) : subStatus === 'grace' ? (
-            <div className="flex items-center gap-4 bg-amber-500/10 border border-amber-500/20 px-6 py-3 rounded-2xl animate-pulse">
-              <div className="text-right">
-                <p className="text-[10px] text-amber-400 font-bold uppercase tracking-widest">Grace Period</p>
-                <div className="flex items-center justify-end gap-1">
-                  <span className="text-xs font-bold text-slate-300">Pay by 10th</span>
-                </div>
-              </div>
-              <div className="w-12 h-12 rounded-full border-4 border-slate-800 border-t-amber-500 flex items-center justify-center relative">
-                <AlertCircle size={20} className="text-amber-400" />
-              </div>
-            </div>
-          ) : (
-            <div className="bg-slate-500/10 border border-white/10 px-6 py-3 rounded-2xl flex items-center gap-3">
-              {hasEnrollments ? (
-                <>
-                  <AlertCircle size={24} className="text-red-500" />
-                  <p className="font-bold text-red-400">{t.expired}</p>
-                </>
-              ) : (
-                <>
-                  <Sparkles size={24} className="text-royal-gold animate-pulse" />
-                  <Link href="/courses" className="font-bold text-royal-gold">{t.enrollNow}</Link>
-                </>
-              )}
-            </div>
-          )}
-
-          {hasEnrollments ? (
-            <button
-              onClick={() => setShowPaymentModal(true)}
-              className="btn-gold flex items-center gap-2 shadow-lg shadow-amber-500/30 w-full md:w-auto justify-center"
-            >
-              <CreditCard size={20} />
-              {t.payFee}
-            </button>
-          ) : (
-            <Link
-              href="/batches"
-              className="btn-gold flex items-center gap-2 shadow-lg shadow-amber-500/30 w-full md:w-auto justify-center"
-            >
-              <Sparkles size={20} />
-              {t.enrollFirst}
-            </Link>
-          )}
-        </div>
-      </header>
-
-      {/* Next Live Class Section */}
-      {nextSession && (
-        <section className="glass-panel p-6 border-royal-gold/20 bg-royal-gold/5 flex flex-col md:flex-row items-center justify-between relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-royal-gold/10 blur-[80px] -mr-32 -mt-32" />
-          <div className="relative z-10 w-full md:w-auto">
-            <div className="flex items-center gap-3 mb-2">
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${nextSession.is_live ? "bg-red-500/20 text-red-500 border-red-500/20 animate-pulse" : "bg-royal-gold/20 text-royal-gold border-royal-gold/20"}`}>
-                {nextSession.is_live ? "LIVE NOW" : "UPCOMING CLASS"}
-              </span>
-              <h3 className="text-xl font-bold text-white max-w-md truncate">{nextSession.title}</h3>
-            </div>
-            <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400 font-mono">
-              <span className="flex items-center gap-1.5 bg-slate-900/50 px-2 py-1 rounded"><Calendar size={12} className="text-royal-gold" /> {new Date(nextSession.start_time).toLocaleDateString()}</span>
-              <span className="flex items-center gap-1.5 bg-slate-900/50 px-2 py-1 rounded"><Clock size={12} className="text-royal-gold" /> {new Date(nextSession.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-              {(nextSession.batch_name || nextSession.course_title) && (
-                <span className="flex items-center gap-1.5 bg-white/5 px-2 py-1 rounded border border-white/5">
-                  {nextSession.batch_name || nextSession.course_title}
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="relative z-10 mt-4 md:mt-0 w-full md:w-auto">
-            {nextSession.is_live ? (
-              <a
-                href={nextSession.zoom_link || "#"}
-                target="_blank"
-                className="btn-primary-premium px-8 py-4 flex items-center justify-center gap-3 text-sm uppercase font-black tracking-widest animate-pulse shadow-lg shadow-red-500/20 bg-red-600 border-red-500 hover:bg-red-700 w-full md:w-auto"
-              >
-                <PlayCircle size={20} fill="currentColor" />
-                JOIN LIVE CLASS
-              </a>
-            ) : (
-              <div className="text-right bg-slate-900/40 p-3 rounded-xl border border-white/5">
-                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Starts In</p>
-                <p className="text-2xl font-mono font-bold text-white">
-                  {(() => {
-                    const diff = new Date(nextSession.start_time).getTime() - new Date().getTime();
-                    if (diff < 0) return "Starting...";
-                    const hours = Math.floor(diff / (1000 * 60 * 60));
-                    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                    return `${hours}h ${mins}m`;
-                  })()}
-                </p>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
+      <LiveClassBanner nextSession={nextSession} />
 
       <AnimatePresence>
         {currentMonthPending && (
@@ -355,88 +283,41 @@ export default function StudentDashboardClient({
       </AnimatePresence>
 
       <div className="space-y-24">
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
+          <section className="space-y-6">
+           
+            <WritingLab
+                t={t}
+                allSelectableItems={allSelectableItems}
+                submissionForm={submissionForm}
+                setSubmissionForm={setSubmissionForm}
+                handleSubmissionUpload={handleSubmissionUpload}
+                isUploading={isUploading}
+                userSubmissions={userSubmissions}
+              />
+          </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
-            <section className="space-y-6">
-              <h2 className="text-2xl font-heading font-bold text-white flex items-center gap-3 border-b border-white/10 pb-4">
-                <HelpCircle className="text-royal-gold" />
-                {t.quizzes}
-              </h2>
-              <QuizEngine />
-            </section>
-
-            <section className="space-y-6">
-              <h2 className="text-2xl font-heading font-bold text-white flex items-center gap-3 border-b border-white/10 pb-4">
-                <Sparkles className="text-royal-gold" />
-                AI Writing Lab
-              </h2>
-              <div className="space-y-20">
-                <GrammarAssistant />
-
-                <div className="glass-panel p-10 space-y-8">
-                  <div className="flex items-center gap-3 mb-2">
-                    <FileText className="text-royal-gold" />
-                    <p className="text-white font-bold">{t.handwriting}</p>
-                  </div>
-
-                  <div className="space-y-4">
-                    <input
-                      type="text"
-                      placeholder={t.essayPlaceholder}
-                      className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-royal-gold transition-all"
-                    />
-                    <div className="border-2 border-dashed border-white/10 rounded-xl p-10 text-center hover:border-royal-gold/30 transition-all group cursor-pointer">
-                      <FileText size={40} className="mx-auto text-slate-600 group-hover:text-royal-gold transition-colors mb-2" />
-                      <p className="text-sm text-slate-500 group-hover:text-slate-300">Upload your PDF/Image for Saifullah Sir's review</p>
-                      <input type="file" className="hidden" />
-                    </div>
-                    <button className="w-full btn-gold flex items-center justify-center gap-2">
-                      <Send size={18} /> {t.sendToSir}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </section>
-          </div>
+          <section className="space-y-6">
+            <div className="space-y-20">
+               <h2 className="text-2xl font-heading font-bold text-white flex items-center gap-3 border-b border-white/10 pb-4">
+              <HelpCircle className="text-royal-gold" />
+              {t.quizzes}
+            </h2>
+            <QuizEngine />
+            <h2 className="text-2xl font-heading font-bold text-white flex items-center gap-3 border-b border-white/10 pb-4">
+              <Sparkles className="text-royal-gold" />
+              AI Writing Lab
+            </h2>
+               
+              <GrammarAssistant />
+             
+            </div>
+          </section>
         </div>
       </div>
 
-      <section className="my-16">
-        <details className="glass-panel border-white/5 overflow-hidden group">
-          <summary className="cursor-pointer p-4 flex items-center justify-between hover:bg-white/5 transition-all">
-            <div className="flex items-center gap-2">
-              <CreditCard size={16} className="text-slate-500" />
-              <h3 className="text-sm font-medium text-slate-400">{t.history}</h3>
-            </div>
-            <div className="text-slate-600 group-open:rotate-180 transition-transform">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" />
-              </svg>
-            </div>
-          </summary>
-          <div className="p-4 pt-0 space-y-3 max-h-[400px] overflow-y-auto">
-            {subscriptions.length > 0 ? [...subscriptions].reverse().map((sub: any) => (
-              <div key={sub.id} className="bg-white/5 p-3 rounded-lg flex items-center justify-between border border-white/5">
-                <div className="flex items-center gap-3">
-                  <div className={`p-1.5 rounded-lg ${sub.status === 'verified' ? 'bg-green-500/10 text-green-500' : 'bg-amber-500/10 text-amber-500'}`}>
-                    <CreditCard size={14} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-white">{sub.month}</p>
-                    <p className="text-[9px] text-slate-600 font-mono">{sub.trnx_id}</p>
-                  </div>
-                </div>
-                <div className={`px-2 py-0.5 rounded-full text-[8px] font-bold uppercase ${sub.status === 'verified' ? 'bg-green-500/20 text-green-400' : 'bg-amber-500/20 text-amber-400'}`}>
-                  {sub.status === 'verified' ? t.verified : t.pending}
-                </div>
-              </div>
-            )) : (
-              <p className="text-center text-slate-600 py-6 text-sm">No payment history found.</p>
-            )}
-          </div>
-        </details>
-      </section>
+      <PaymentHistory t={t} subscriptions={subscriptions} />
+
       <PaymentModal
         isOpen={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}

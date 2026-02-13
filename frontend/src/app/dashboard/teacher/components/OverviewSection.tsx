@@ -53,8 +53,8 @@ export default function OverviewSection({
                         <BarChart3 size={32} />
                     </div>
                     <div>
-                        <p className="text-xs text-slate-500 uppercase tracking-widest font-black">Success Rate</p>
-                        <p className="text-4xl font-black text-white mt-1">94%</p>
+                        <p className="text-xs text-slate-500 uppercase tracking-widest font-black">This Month</p>
+                        <p className="text-4xl font-black text-white mt-1">৳{stats.monthlyRevenue}</p>
                     </div>
                 </div>
             </div>
@@ -69,38 +69,62 @@ export default function OverviewSection({
                             </h2>
 
                             <div className="flex flex-wrap items-center gap-4">
-                                <div className="flex items-center gap-3 bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2">
-                                    <Filter size={14} className="text-slate-500" />
-                                    <select
-                                        className="bg-transparent text-xs font-bold text-slate-300 focus:outline-none cursor-pointer"
-                                        value={batchFilter}
-                                        onChange={(e) => handleFilterChange("batchId", e.target.value)}
-                                    >
-                                        <option value="All">All Batches</option>
-                                        {batchesList.map((b: any) => <option key={b.id} value={b.id}>{b.name}</option>)}
-                                    </select>
-                                </div>
+                                <div className="flex flex-wrap items-center gap-4">
+                                    {/* Batch Filter */}
+                                    <div className="relative group/filter">
+                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-royal-gold/20 to-transparent rounded-xl blur opacity-0 group-hover/filter:opacity-100 transition duration-500"></div>
+                                        <div className="relative flex items-center gap-3 bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-xl px-5 py-2.5 hover:border-royal-gold/30 transition-all">
+                                            <Filter size={14} className="text-royal-gold/70" />
+                                            <select
+                                                className="bg-transparent text-xs font-black text-slate-300 focus:outline-none cursor-pointer appearance-none pr-6 uppercase tracking-widest"
+                                                value={batchFilter}
+                                                onChange={(e) => handleFilterChange("batchId", e.target.value)}
+                                            >
+                                                <option value="All" className="bg-slate-900">All Batches</option>
+                                                {batchesList.map((b: any) => <option key={b.id} value={b.id} className="bg-slate-900">{b.name}</option>)}
+                                            </select>
+                                            <div className="absolute right-4 pointer-events-none text-slate-600">
+                                                <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor">
+                                                    <path d="M0 2l4 4 4-4" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                                <div className="flex items-center gap-3 bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2">
-                                    <Filter size={14} className="text-slate-500" />
-                                    <select
-                                        className="bg-transparent text-xs font-bold text-slate-300 focus:outline-none cursor-pointer"
-                                        value={courseFilter}
-                                        onChange={(e) => handleFilterChange("courseId", e.target.value)}
-                                    >
-                                        <option value="All">All Courses</option>
-                                        {coursesList.map((c: any) => <option key={c.id} value={c.id}>{c.title}</option>)}
-                                    </select>
-                                </div>
+                                    {/* Course Filter */}
+                                    <div className="relative group/filter">
+                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-royal-gold/20 to-transparent rounded-xl blur opacity-0 group-hover/filter:opacity-100 transition duration-500"></div>
+                                        <div className="relative flex items-center gap-3 bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-xl px-5 py-2.5 hover:border-royal-gold/30 transition-all">
+                                            <Filter size={14} className="text-royal-gold/70" />
+                                            <select
+                                                className="bg-transparent text-xs font-black text-slate-300 focus:outline-none cursor-pointer appearance-none pr-6 uppercase tracking-widest"
+                                                value={courseFilter}
+                                                onChange={(e) => handleFilterChange("courseId", e.target.value)}
+                                            >
+                                                <option value="All" className="bg-slate-900">All Courses</option>
+                                                {coursesList.map((c: any) => <option key={c.id} value={c.id} className="bg-slate-900">{c.title}</option>)}
+                                            </select>
+                                            <div className="absolute right-4 pointer-events-none text-slate-600">
+                                                <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor">
+                                                    <path d="M0 2l4 4 4-4" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                                <div className="flex items-center gap-3 bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2">
-                                    <Clock size={14} className="text-slate-500" />
-                                    <input
-                                        type="month"
-                                        className="bg-transparent text-xs font-bold text-slate-300 focus:outline-none cursor-pointer"
-                                        value={monthFilter === "All" ? "" : monthFilter}
-                                        onChange={(e) => handleFilterChange("month", e.target.value || "All")}
-                                    />
+                                    {/* Month Filter */}
+                                    <div className="relative group/filter">
+                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-royal-gold/20 to-transparent rounded-xl blur opacity-0 group-hover/filter:opacity-100 transition duration-500"></div>
+                                        <div className="relative flex items-center gap-3 bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-xl px-5 py-2.5 hover:border-royal-gold/30 transition-all">
+                                            <Clock size={14} className="text-royal-gold/70" />
+                                            <input
+                                                type="month"
+                                                className="bg-transparent text-xs font-black text-slate-300 focus:outline-none cursor-pointer uppercase tracking-widest [color-scheme:dark]"
+                                                value={monthFilter === "All" ? "" : monthFilter}
+                                                onChange={(e) => handleFilterChange("month", e.target.value || "All")}
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -113,7 +137,9 @@ export default function OverviewSection({
 
                                         <div className="flex items-start justify-between relative z-10">
                                             <div>
-                                                <h3 className="text-lg font-bold text-white group-hover:text-royal-gold transition-colors">{sub.user_name}</h3>
+                                                <h3 className="text-lg font-bold text-white group-hover:text-royal-gold transition-colors">
+                                                    {sub.user?.name || "Unknown Student"}
+                                                </h3>
                                                 <p className="text-[10px] text-slate-500 font-mono flex items-center gap-2">
                                                     <Clock size={10} /> {sub.month}
                                                 </p>
@@ -134,9 +160,11 @@ export default function OverviewSection({
                                                     <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Sender</span>
                                                     <span className="text-xs font-mono text-white">{sub.sender_number}</span>
                                                 </div>
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Target</span>
-                                                    <span className="text-[10px] font-bold text-slate-300 truncate max-w-[120px]">{sub.batch_name || sub.course_title}</span>
+                                                <div className="flex justify-between items-center gap-4">
+                                                    <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest shrink-0">Target</span>
+                                                    <span className="text-[10px] font-bold text-slate-300 truncate text-right">
+                                                        {sub.batch?.name || sub.course?.title || "N/A"}
+                                                    </span>
                                                 </div>
                                             </div>
 

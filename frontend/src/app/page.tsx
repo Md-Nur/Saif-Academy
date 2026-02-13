@@ -4,6 +4,9 @@ import Features from "@/components/Home/Features";
 import Testimonials from "@/components/Home/Testimonials";
 import FloatingContact from "@/components/FloatingContact";
 import SearchBar from "@/components/layout/Nav/SearchBar";
+import Link from "next/link";
+
+// ... existing imports ...
 
 export default function Home() {
   return (
@@ -32,8 +35,17 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-heading font-bold text-white mb-6">Ready to Start Your Journey?</h2>
             <p className="text-slate-300 mb-8 text-lg">Join hundreds of successful students and master English with our expert coaching.</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="btn-primary-premium">Enroll Now</button>
-              <button className="btn-gold">Contact Us</button>
+              <Link href="/courses" className="btn-primary-premium flex items-center justify-center">
+                Enroll Now
+              </Link>
+              <Link
+                href="https://wa.me/YOUR_NUMBER"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-gold flex items-center justify-center"
+              >
+                Contact Us
+              </Link>
             </div>
           </div>
         </div>

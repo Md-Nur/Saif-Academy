@@ -106,9 +106,9 @@ export default function TransactionsSection({
                                         </td>
                                         <td className="p-4">
                                             <span
-                                                className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${sub.status === "verified"
+                                                className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${sub.status?.toLowerCase() === "verified"
                                                     ? "bg-green-500/20 text-green-400 border border-green-500/20"
-                                                    : sub.status === "rejected"
+                                                    : sub.status?.toLowerCase() === "rejected"
                                                         ? "bg-red-500/20 text-red-400 border border-red-500/20"
                                                         : "bg-amber-500/20 text-amber-400 border border-amber-500/20"
                                                     }`}
@@ -117,7 +117,7 @@ export default function TransactionsSection({
                                             </span>
                                         </td>
                                         <td className="p-4">
-                                            {sub.status === "pending" && (
+                                            {sub.status?.toLowerCase() === "pending" && (
                                                 <div className="flex gap-2">
                                                     <button
                                                         onClick={() => handleVerify(sub.id)}
@@ -133,7 +133,7 @@ export default function TransactionsSection({
                                                     </button>
                                                 </div>
                                             )}
-                                            {sub.status !== "pending" && (
+                                            {sub.status?.toLowerCase() !== "pending" && (
                                                 <p className="text-slate-600 text-xs italic">No actions</p>
                                             )}
                                         </td>

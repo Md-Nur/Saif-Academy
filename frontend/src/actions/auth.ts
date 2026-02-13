@@ -17,7 +17,7 @@ export async function registerUser(formData: any) {
     const data = await res.json();
 
     if (!res.ok) {
-      return {  error: data.detail || "Registration failed" };
+      return { error: data.detail || "Registration failed" };
     }
 
     const cookieStore = await cookies();
@@ -58,7 +58,7 @@ export async function loginUser(formData: any) {
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });
 
-    return { success: true, role: data.role }; 
+    return { success: true, role: data.role };
   } catch (err: any) {
     return { error: "An unexpected error occurred: " + err.message };
   }
@@ -114,6 +114,50 @@ export async function updateProfile(formData: any) {
     }
 
     return { success: true, user: data };
+  } catch (err: any) {
+    return { error: "An unexpected error occurred: " + err.message };
+  }
+}
+
+export async function forgotPassword(email: string) {
+  try {
+    const res = await fetch(`${API_URL}/auth/forgot-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return { error: data.detail || "Request failed" };
+    }
+
+    return { success: true, message: data.message };
+  } catch (err: any) {
+    return { error: "An unexpected error occurred: " + err.message };
+  }
+}
+
+export async function resetPassword(formData: any) {
+  try {
+    const res = await fetch(`${API_URL}/auth/reset-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return { error: data.detail || "Reset failed" };
+    }
+
+    return { success: true, message: data.message };
   } catch (err: any) {
     return { error: "An unexpected error occurred: " + err.message };
   }

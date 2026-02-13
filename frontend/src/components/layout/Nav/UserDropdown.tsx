@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { User, LogOut, Settings, ChevronDown } from "lucide-react";
 import { logoutUser } from "@/actions/auth";
@@ -21,6 +21,13 @@ export default function UserDropdown({ user, onLogout }: UserDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const router = useRouter();
+
+  // Auto-scroll to top when logout modal opens
+  useEffect(() => {
+    if (showLogoutConfirm) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [showLogoutConfirm]);
 
   const handleLogout = async () => {
     try {

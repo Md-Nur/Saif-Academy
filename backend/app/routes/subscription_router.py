@@ -106,7 +106,7 @@ def get_all_subscriptions(
     statement = select(models.Subscription)
     
     if status and status != "All":
-        statement = statement.where(models.Subscription.status == status)
+        statement = statement.where(models.Subscription.status == status.upper())
     if batch_id:
         statement = statement.where(models.Subscription.batch_id == batch_id)
     if month:

@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import { Users, CheckCircle, Clock, Upload, Link as LinkIcon, FileText, Filter, BarChart3, Layers, Sparkles, FileSearch, Plus, Pencil, Trash2, GraduationCap, Users2, Video, AlertCircle } from "lucide-react";
+import { Users, CheckCircle, Clock, Upload, Link as LinkIcon, FileText, Filter, BarChart3, Layers, Sparkles, FileSearch, Plus, Pencil, Trash2, GraduationCap, Users2, Video, AlertCircle, HelpCircle } from "lucide-react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { formatTime } from "@/lib/utils";
-import { verifySubscription, rejectSubscription, getSubscriptions, uploadMaterial, createBatch, updateBatch, deleteBatch, createCourse, updateCourse, deleteCourse, promoteUser, findUsers, removeBatchLink, removeCourseLink } from "@/actions/teacher";
+import { verifySubscription, rejectSubscription, getSubscriptions, uploadMaterial, createBatch, updateBatch, deleteBatch, createCourse, updateCourse, deleteCourse, promoteUser, findUsers, removeBatchLink, removeCourseLink, createQuizQuestion, deleteQuizQuestion } from "@/actions/teacher";
 import { getRoutines, createRoutine, updateRoutine, deleteRoutine, createSession, getSessions, getTeacherNextSession } from "@/actions/routine";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -17,6 +17,8 @@ import BatchManagement from "./components/BatchManagement";
 import CourseManagement from "./components/CourseManagement";
 import RoutineManagement from "./components/RoutineManagement";
 import UserManagement from "./components/UserManagement";
+import QuizManagement from "./components/QuizManagement";
+import SubmissionManagement from "./components/SubmissionManagement";
 
 // Modals
 import RoutineModal from "./components/modals/RoutineModal";
@@ -24,6 +26,7 @@ import SessionModal from "./components/modals/SessionModal";
 import QuickLinkModal from "./components/modals/QuickLinkModal";
 import ManagementModal from "./components/modals/ManagementModal";
 import ConfirmationModal from "./components/modals/ConfirmationModal";
+import QuizQuestionModal from "./components/modals/QuizQuestionModal";
 
 export default function TeacherDashboardClient({ initialPendingSubs, initialStats, initialBatches = [], initialCourses = [] }: any) {
   const router = useRouter();
@@ -39,7 +42,7 @@ export default function TeacherDashboardClient({ initialPendingSubs, initialStat
   const [allSubs, setAllSubs] = useState<any[]>([]);
   const [subsLoading, setSubsLoading] = useState(false);
   const [subsFilter, setSubsFilter] = useState("All");
-  const [uploadData, setUploadData] = useState({ title: "", type: "pdf", url: "", batch_ids: "" });
+  const [uploadData, setUploadData] = useState({ title: "", type: "pdf", url: "", batch_ids: "", course_ids: "" });
 
   // Management State
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "overview"); // overview, management, transactions
@@ -67,6 +70,7 @@ export default function TeacherDashboardClient({ initialPendingSubs, initialStat
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{ id: string; type: string } | null>(null);
   const [showQuickLinkModal, setShowQuickLinkModal] = useState(false);
+  const [showQuizModal, setShowQuizModal] = useState(false);
 
   const fetchTransactions = async (status: string) => {
     setSubsLoading(true);
@@ -165,16 +169,42 @@ export default function TeacherDashboardClient({ initialPendingSubs, initialStat
     e.preventDefault();
     try {
       const batchList = uploadData.batch_ids.split(",").map(id => id.trim()).filter(id => id !== "");
-      if (batchList.length === 0) {
-        toast.error("Please provide at least one Batch ID");
+      const courseList = uploadData.course_ids.split(",").map(id => id.trim()).filter(id => id !== "");
+
+      if (batchList.length === 0 && courseList.length === 0) {
+        toast.error("Please provide at least one Batch or Course ID");
         return;
       }
-      const result = await uploadMaterial({ ...uploadData, batch_id: batchList[0] });
-      if (result.success) {
-        toast.success(`Resource distributed!`);
-        setUploadData({ title: "", type: "pdf", url: "", batch_ids: "" });
+
+      let successCount = 0;
+
+      // Distribute to batches
+      for (const bId of batchList) {
+        const result = await uploadMaterial({
+          title: uploadData.title,
+          type: uploadData.type,
+          url: uploadData.url,
+          batch_id: bId
+        });
+        if (result.success) successCount++;
+      }
+
+      // Distribute to courses
+      for (const cId of courseList) {
+        const result = await uploadMaterial({
+          title: uploadData.title,
+          type: uploadData.type,
+          url: uploadData.url,
+          course_id: cId
+        });
+        if (result.success) successCount++;
+      }
+
+      if (successCount > 0) {
+        toast.success(`Resource distributed to ${successCount} targets!`);
+        setUploadData({ title: "", type: "pdf", url: "", batch_ids: "", course_ids: "" });
       } else {
-        toast.error(result.error || "Upload failed");
+        toast.error("Upload failed");
       }
     } catch (err) {
       toast.error("An unexpected error occurred");
@@ -233,6 +263,24 @@ export default function TeacherDashboardClient({ initialPendingSubs, initialStat
         setEditingItem(null);
         setFormData({});
         // In a real app, revalidatePath would refresh data, but we update locally for better UX
+        window.location.reload();
+      } else {
+        toast.error(result.error || "Save failed");
+      }
+    } catch (err) {
+      toast.error("An unexpected error occurred");
+    }
+  };
+
+  const handleQuizSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const result = await createQuizQuestion(formData);
+      if (result.success) {
+        toast.success("Question deployed successfully!");
+        setShowQuizModal(false);
+        setEditingItem(null);
+        setFormData({});
         window.location.reload();
       } else {
         toast.error(result.error || "Save failed");
@@ -509,6 +557,8 @@ export default function TeacherDashboardClient({ initialPendingSubs, initialStat
             uploadData={uploadData}
             setUploadData={setUploadData}
             handleUpload={handleUpload}
+            batches={batchesList}
+            courses={coursesList}
           />
         </div>
       ) : activeTab === "transactions" ? (
@@ -552,6 +602,20 @@ export default function TeacherDashboardClient({ initialPendingSubs, initialStat
             >
               <Users size={18} />
               Users
+            </button>
+            <button
+              onClick={() => handleMgmtTabChange("quizzes")}
+              className={`flex items-center gap-3 px-8 py-3 rounded-xl text-sm font-bold transition-all ${mgmtTab === "quizzes" ? "bg-white/10 text-royal-gold border border-royal-gold/20" : "text-slate-500 hover:text-white"}`}
+            >
+              <HelpCircle size={18} />
+              Quizzes
+            </button>
+            <button
+              onClick={() => handleMgmtTabChange("submissions")}
+              className={`flex items-center gap-3 px-8 py-3 rounded-xl text-sm font-bold transition-all ${mgmtTab === "submissions" ? "bg-white/10 text-royal-gold border border-royal-gold/20" : "text-slate-500 hover:text-white"}`}
+            >
+              <FileSearch size={18} />
+              Submissions
             </button>
           </div>
 
@@ -599,7 +663,7 @@ export default function TeacherDashboardClient({ initialPendingSubs, initialStat
                 setShowSessionModal={setShowSessionModal}
                 upcomingSessions={upcomingSessions}
               />
-            ) : (
+            ) : mgmtTab === "users" ? (
               <UserManagement
                 handleSearchUsers={handleSearchUsers}
                 searchQuery={searchQuery}
@@ -609,6 +673,17 @@ export default function TeacherDashboardClient({ initialPendingSubs, initialStat
                 isPromoting={isPromoting}
                 setPromoUserId={setPromoUserId}
                 handlePromote={handlePromote}
+              />
+            ) : mgmtTab === "quizzes" ? (
+              <QuizManagement
+                setIsModalOpen={setShowQuizModal}
+                setEditingItem={setEditingItem}
+                setFormData={setFormData}
+              />
+            ) : (
+              <SubmissionManagement
+                batches={batchesList}
+                courses={coursesList}
               />
             )}
           </div>
@@ -642,6 +717,12 @@ export default function TeacherDashboardClient({ initialPendingSubs, initialStat
         handleQuickLinkRemove={handleQuickLinkRemove}
       />
 
+      <ConfirmationModal
+        showConfirmModal={showConfirmModal}
+        setShowConfirmModal={setShowConfirmModal}
+        confirmReject={confirmReject}
+      />
+
       <ManagementModal
         isModalOpen={isModalOpen}
         setIsModalOpen={setIsModalOpen}
@@ -652,10 +733,12 @@ export default function TeacherDashboardClient({ initialPendingSubs, initialStat
         handleMgmtSubmit={handleMgmtSubmit}
       />
 
-      <ConfirmationModal
-        showConfirmModal={showConfirmModal}
-        setShowConfirmModal={setShowConfirmModal}
-        confirmReject={confirmReject}
+      <QuizQuestionModal
+        isOpen={showQuizModal}
+        setIsOpen={setShowQuizModal}
+        formData={formData}
+        setFormData={setFormData}
+        handleSubmit={handleQuizSubmit}
       />
 
 

@@ -73,3 +73,44 @@ The platform uses a **"Gravity-Defying"** UI theme:
 - **Royal Blue & White** color palette.
 - **Glassmorphism** (semi-transparent, blurred backgrounds).
 - **DaisyUI** components for a clean, consistent look.
+
+## Deployment Guide
+
+This guide details the steps to deploy the Saif Academy application to Vercel as two separate projects (Frontend and Backend).
+
+### 1. Backend Deployment (Python Serverless)
+
+#### Optimization Steps Taken
+- Generated `requirements.txt` from `pyproject.toml`.
+- Verified `vercel.json` configuration for Python runtime.
+
+#### Deployment Instructions
+1. **New Project**: In Vercel, create a new project.
+2. **Root Directory**: Set the root directory to `backend`.
+3. **Framework Preset**: Select "Other" (or let Vercel detect Python).
+4. **Build Command**: Leave empty (Vercel handles this for Python).
+5. **Output Directory**: Leave empty.
+6. **Environment Variables**:
+   - `DATABASE_URL`: Your PostgreSQL connection string.
+   - `FRONTEND_URL`: URL of your deployed frontend (e.g., `https://saif-academy-frontend.vercel.app`).
+   - `JWT_SECRET`: Your secret key.
+   - `SECRET_KEY`: Your application secret.
+   - `CLOUDINARY_*`: Your Cloudinary credentials.
+
+### 2. Frontend Deployment (Next.js)
+
+#### Optimization Steps Taken
+- Ran production build (`bun run build`) to ensure no errors.
+- Fixed ESLint configuration conflict (removed legacy `.eslintrc.json`).
+
+#### Deployment Instructions
+1. **New Project**: In Vercel, create a new project (or add to existing).
+2. **Root Directory**: Set the root directory to `frontend`.
+3. **Framework Preset**: Vercel should automatically detect "Next.js".
+4. **Environment Variables**:
+   - `NEXT_PUBLIC_API_URL`: URL of your deployed backend (e.g., `https://saif-academy-backend.vercel.app`).
+   - `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`: Your Cloudinary cloud name.
+
+### Verification
+- **Frontend**: Visit the deployed frontend URL. Ensure it loads and the "Stats" section (from Hero component) displays correctly.
+- **Backend**: Visit `https://<backend-url>/docs` to see the Swagger UI.

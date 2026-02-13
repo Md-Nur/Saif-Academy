@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 from datetime import datetime
 from app.database.models import UserRole
@@ -139,7 +139,29 @@ class ResourceCreate(BaseModel):
     title: str
     type: str
     url: str
-    batch_id: UUID
+    batch_id: Optional[UUID] = None
+    course_id: Optional[UUID] = None
+
+class SubmissionCreate(BaseModel):
+    title: str
+    type: str # "hw", "cw"
+    urls: List[str]
+    batch_id: Optional[UUID] = None
+    course_id: Optional[UUID] = None
+
+class SubmissionResponse(BaseModel):
+    id: UUID
+    user_id: UUID
+    batch_id: Optional[UUID]
+    course_id: Optional[UUID]
+    title: str
+    type: str
+    urls: List[str]
+    created_at: datetime
+    user: Optional[UserBase] = None
+
+    class Config:
+        from_attributes = True
 
 class BatchCreate(BaseModel):
     name: str
@@ -161,3 +183,62 @@ class CourseCreate(BaseModel):
     video_url: Optional[str] = None # Can contain multiple comma-separated URLs
     instituteName: Optional[str] = None
     meeting_link: Optional[str] = None
+
+class QuizQuestionBase(BaseModel):
+    question: str
+    options: List[str]
+    correct_answer: int
+    explanation: str
+
+class QuizQuestionCreate(QuizQuestionBase):
+    pass
+
+class QuizQuestionResponse(QuizQuestionBase):
+    id: UUID
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+class TestimonialBase(BaseModel):
+    name: str
+    role: str
+    content: str
+    rating: int = 5
+    avatar: Optional[str] = None
+
+class TestimonialCreate(TestimonialBase):
+    pass
+
+class TestimonialResponse(TestimonialBase):
+    id: UUID
+    is_approved: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class PlatformStats(BaseModel):
+    total_students: int
+    total_teachers: int
+    total_batches: int
+    total_courses: int
+    total_programs: int  # batches + courses
+
+class UserStats(BaseModel):
+    enrolled_batches: int
+    enrolled_courses: int
+    total_enrollments: int
+    attendance_percentage: Optional[float] = None
+
+class TeacherStats(BaseModel):
+    active_students: int
+    monthly_revenue: float  # This month's verified payments
+    pending_payments: int

@@ -57,6 +57,11 @@ export async function getCourses() {
   return await fetchList<Course>("/courses/");
 }
 
+// Fetch grammar quiz questions
+export async function getQuizQuestions() {
+  return await fetchList("/quizzes/questions");
+}
+
 // Fetch batches user is subscribed to
 export async function getMyBatches() {
   return await fetchList("/subscriptions/my-batches");

@@ -6,7 +6,6 @@ from app.config.database import engine
 from app.database import models
 
 async def cleanup_meeting_links():
-    print("Starting meeting link cleanup task...")
     while True:
         try:
             with Session(engine) as session:
@@ -40,9 +39,9 @@ async def cleanup_meeting_links():
                         session.add(course)
                 
                 session.commit()
-                # print("Meeting links cleanup check completed.")
         except Exception as e:
-            print(f"Error in cleanup_meeting_links: {e}")
+            pass
+            
             
         # Wait for 10 minutes (600 seconds)
         await asyncio.sleep(600)

@@ -2,7 +2,7 @@ import Card from "@/components/ui/Card";
 import Title from "@/components/ui/Title";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { getBatches, getCourses, getMe } from "@/lib/data";
+import { getBatches, getCourses, getMe, getMyBatches, getMyCourses } from "@/lib/data";
 import EnrollmentButton from "@/components/ui/EnrollmentButton";
 import { Entity } from "@/lib/types";
 
@@ -46,6 +46,18 @@ export default async function EntityGrid({
     } else {
       items = await getCourses();
     }
+  }
+
+  // Enrollment check for logged-in students
+  let enrolledIds: string[] = [];
+  if (user && user.role === 'student') {
+    const [enrolledBatches, enrolledCourses] = await Promise.all([
+      getMyBatches(),
+      getMyCourses()
+    ]);
+    enrolledIds = itemType === 'batch'
+      ? enrolledBatches.map((b: any) => b.id.toString())
+      : enrolledCourses.map((c: any) => c.id.toString());
   }
 
   const displayedItems = limit ? (items || []).slice(0, limit) : (items || []);
@@ -122,6 +134,7 @@ export default async function EntityGrid({
                   videoUrl={item.video_url as string || undefined}
                   actionText={actionText}
                   user={user}
+                  isEnrolled={enrolledIds.includes(item.id?.toString() || "")}
                   className={isFree ? "bg-red-600 text-white hover:bg-red-700" : "bg-royal-gold text-royal-blue-light hover:bg-royal-gold-hover hover:text-white"}
                 />
               </div>

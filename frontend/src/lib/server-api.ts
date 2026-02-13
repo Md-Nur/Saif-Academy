@@ -1,13 +1,18 @@
 import axios from "axios";
-import { cookies } from "next/headers";
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-// Helper to get headers with token
+// Helper to get headers with token (Only works on server)
 async function getAuthHeaders() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  if (typeof window !== "undefined") return {}; // Should not be called on client
+
+  try {
+    const { cookies } = await import("next/headers");
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  } catch (e) {
+    return {};
+  }
 }
 
 // Unified fetcher function to handle common logic
